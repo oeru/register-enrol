@@ -24,3 +24,5 @@ Of course, the enrolling could be done implicitly here, when the user completes 
   - if they're already logged in - redirects them to the same page with the "enrol this user in this course" variable set - and the site displays a "you are enrolled "
 
 3. A learner wants to see what courses she's enrolled in and goes to the user profile page (e.g. by clicking the "person" icon in the menu or a "my account" link). The page shows her a list of courses for which she's enrolled (including the date enrolled) and provides an "unenrol" button for each (which if clicked, will ask "are you sure"). The page will also offer a link to view other available courses (or perhaps a list of courses currently available on the Course site, in which the learner can enrol)
+
+4. An administrator wants to see who is enrolled in each site, and when they enrolled. They can view a summary (which can include a map of country representation, etc.) for the site (including historical), plus current status (sitewide), and
