@@ -13,4 +13,4 @@ This plugin provides streamlined services to allow a learner who wants to regist
 
 ## Requirements, Use Cases, and Future Plans
 
-See our [wiki](wiki) for discussions on these things.
+See our [wiki](https://github.com/oeru/register-enrol/wiki) for discussions on these things.
