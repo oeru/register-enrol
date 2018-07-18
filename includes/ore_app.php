@@ -1,13 +1,14 @@
 <?php
 
 require ORE_PATH . 'includes/ore_base.php';
+// get the countries list...
+include_once ORE_PATH . 'includes/ore_countries.php';
 
 class OREMain extends OREBase {
     public static $instance = NULL; // this instance
 
     // ORE -> ORE variables
 	public static $current_user; // If logged in upon instantiation, it is a user object.
-	public static $data; // ore_data option
 
     // returns an instance of this class if called, instantiating if necessary
     public static function get_instance() {
@@ -21,16 +22,12 @@ class OREMain extends OREBase {
 
         $this->log('setting up scripts');
         // add the ajax handlers
-        $current_user = wp_get_current_user();
-        // for security's sake, don't even show the password hash...
-        unset($current_user->data->user_pass);
-        $this->log('current user: '.print_r($current_user, true));
         wp_enqueue_script(ORE_SCRIPT, ORE_URL.'js/ore_script.js', array(
             'jquery', 'jquery-form'));
         wp_localize_script(ORE_SCRIPT, 'ore_data', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_submit' => wp_create_nonce('ore-submit-nonce'),
-            'user' => $current_user
+            'user' => $this->get_user()
         ));
         // our css
         wp_register_style(ORE_STYLE, ORE_URL.'css/ore_style.css');
@@ -41,8 +38,7 @@ class OREMain extends OREBase {
         add_action('wp_ajax_nopriv_ore_submit', array($this, 'ajax_submit'));
         // add the shortcode
         add_shortcode(ORE_ID, 'OREMain::shortcode');
-
-                // allows us to add a class to our post
+        // allows us to add a class to our post
         add_filter('body_class', array($this, 'add_post_class'));
         add_filter('post_class', array($this, 'add_post_class'));
         // create a default page if it doesn't already exist...
@@ -67,6 +63,68 @@ class OREMain extends OREBase {
        wp_die();
     }
 
+    public function get_user($user_id = null) {
+        // get the current user
+        if ($user_id === null) {
+            $current = wp_get_current_user();
+            $user_id = $current->data->ID;
+            // for security's sake, don't even show the password hash...
+            unset($current->data->user_pass);
+        }
+        $this->log('current user: '.print_r($current, true));
+        // initialise this with the default values
+        //$user = $this->data;
+        $user = array();
+        // set instance values from $current
+        $user['user_id'] = $current->ID;
+        $user['first_name'] = $current->first_name;
+        $user['last_name'] = $current->last_name;
+        $user['username'] = $current->data->user_login;
+        $user['email'] = $current->data->user_email;
+        $user['display_name'] = $current->data->display_name;
+        $user['country'] = $this->get_country($user_id);
+        $user['country_name'] = $this->get_country_name($user['country']);
+        $user['profile_url'] = $this->get_profile_url($user_id);
+        $user['avatar_url'] = explode('?', get_avatar_url($user_id,
+                array('default'=>'identicon', 'processed_args'=>$avatar_args)))[0];
+        $this->log('avatar_args... '.print_r($avatar_args, true));
+        $user['current_context'] = null;
+        // replace default user object
+        //$this->data = $user;
+        return $user;
+    }
+    // http://2.gravatar.com/avatar/88814fd4a3a14b6a85b56980744c87fd?s=26&r=g
+    /*// get the user's first_name
+    public function get_first_name($id) { return $this->get_meta($id, 'first_name'); }
+    public function set_first_name($id, $val) { return $this->set_meta($id, 'first_name', $val); }
+    // get the user's last_name
+    public function get_last_name($id) { return $this->get_meta($id, 'last_name'); }
+    public function set_last_name($id, $val) { return $this->set_meta($id, 'last_name', $val); } */
+    // get the user's country
+    public function get_country($id) { return $this->get_meta($id, 'usercountry'); }
+    public function set_country($id, $val) { return $this->set_meta($id, 'usercountry', $val); }
+    public function get_country_name($country_code) {
+        global $countries;
+        if ($country_name = $countries[$country_code]) { return $country_name; }
+        return false;
+    }
+    // get the profile edit link
+    // see https://stackoverflow.com/questions/20724301/get-wordpress-user-profile-url-link-by-id#25179230
+    public function get_profile_url($user_id) {
+        if (get_current_user_id() == $user_id) { $url = admin_url('profile.php'); }
+        else { $url = add_query_arg( 'user_id', $user_id, self_admin_url('user-edit.php')); }
+        return $url;
+    }
+    // returns gets meta value if set, otherwise returns null
+    public function get_meta($id, $key) {
+        if ($val = get_user_meta($id, $key, true)) { return $val; }
+        return null;
+    }
+    // returns true if value is set, false otherwise
+    public function set_meta($id, $key, $val) {
+        if (update_user_meta($id, $key, $val)) { return true; }
+        return false;
+    }
     // create a default post to hold our login form...
     public function create_post($slug) {
         global $wp_rewrite;
@@ -113,6 +171,10 @@ class OREMain extends OREBase {
             $classes[] = ORE_CLASS;
         }
         return $classes;
+    }
+
+    public function get_data() {
+        return $this->data;
     }
 
     // provide the actual post itself

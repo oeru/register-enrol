@@ -4,7 +4,7 @@ function LOG() { if (ORE_DEBUG) { console.log.apply(this, arguments); }}
 LOG('ORE DEBUG =', ORE_DEBUG); // only prints if DEBUG = true
 
 //LOG('register-enrol: ', ore_data);
-LOG('before jquery!');
+//LOG('before jquery!');
 // jQuery selectors and related functions in that context
 // initiated after page is "ready"
 jQuery(document).ready(function() {
@@ -12,6 +12,27 @@ jQuery(document).ready(function() {
 
     var $ = jQuery;
     var form = $(this);
+
+    /*
+     * Customise the User Status info
+     */
+    LOG('in status load function');
+    if ore_data.hasOwnProperty('user') {
+        user = ore_data.user;
+        // if the
+        if (user.hasOwnProperty('display_name')) {
+            LOG('display_name', user.display_name);
+            $('#ore-label').text(user.display_name);
+            if (user.hasOwnProperty('avatar_url')) {
+                LOG('avatar', user.avatar_url);
+                var avatar = $('<img>').attr({src: user.avatar_url + '?s=26&r=g'});
+                $('#ore-icon').replaceWith(avatar);
+            }
+        }
+    }
+    /*
+     * End User Status info
+     */
 
     /*
      * initialise jquery tooltips with custom functionality
@@ -79,7 +100,7 @@ jQuery(document).ready(function() {
         });
     }
     /*
-     * end tooltip stuff
+     * End tooltip stuff
      */
 
     // set this up to submit on 'enter'
@@ -127,4 +148,4 @@ jQuery(document).ready(function() {
 
     // the end of the jQuery loop...
 }); // });
-LOG('after jquery!');
+//LOG('after jquery!');
