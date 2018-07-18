@@ -6,24 +6,25 @@
 Plugin Name: OERu Register Enrol
 Plugin URI: https://github.com/oeru/register-enrol
 Description: Provides a widget that helps a user figure out the valid URL for
-    their personal course blog feed
+    their personal course blog feed. Parts are adapted from Login with Ajax by
+    Markus Sykes - http://wordpress.org/extend/plugins/login-with-ajax/
 Version: 0.0.1
 Author: Dave Lane
 Author URI: https://oeru.org, http://WikiEducator.org/User:Davelane
-License: AGPLv3 or later
+License: GPLv3 or later
 */
 
 /*
 This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU Affero General Public License
+modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-Affero GNU General Public License for more details:
-https://www.gnu.org/licenses/agpl-3.0.en.html
+ GNU General Public License for more details:
+https://www.gnu.org/licenses/gpl-3.0.en.html
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
@@ -50,6 +51,9 @@ define('ORE_TITLE', 'Register Enrol');
 define('ORE_MENU', 'Register Enrol');
 define('ORE_SHORTCODE', 'ore_form');
 define('ORE_WIDGET', 'ORE Widget');
+define('ORE_GETSTARTED', 'Start Learning with the OERu');
+// Note: altering this requires change to themes/oeru_course/header.php to suit
+define('ORE_GETSTARTED_SLUG', 'start-learning');
 define('ORE_TEMPLATES', 'register-enrol');
 define('ORE_ID', 'register-enrol');
 define('ORE_CLASS', 'ore-form');
@@ -70,19 +74,23 @@ require ORE_PATH . 'includes/ore_app.php';
 if ( function_exists( 'add_action' ) ) {
     // this starts everything up!
     add_action('plugins_loaded', array(OREMain::get_instance(), 'init'));
+    if (is_admin()) {
+        include_once(ORE_PATH.'includes/ore_admin.php');
+        add_action('plugins_loaded', array(OREAdmin::get_instance(), 'init'));
+    }
 } else {
 	echo 'This only works as a WordPress plugin.';
 	exit;
 }
 
 // Set when to init this class
-add_action('init', 'OREMain::init');
+//add_action('init', 'OREMain::init');
 add_action('widgets_init', 'OREMain::widgets_init');
 
 // Installation and Updates
 $ore_data = get_option('ore_data');
 if ( version_compare( get_option('ore_version',0), ORE_VERSION, '<' ) ){
-    include_once('ore_install.php');
+    include_once(ORE_PATH.'includes/ore_install.php');
 }
 
 // Add translation
@@ -91,12 +99,7 @@ function ore_load_plugin_textdomain(){
 }
 add_action('plugins_loaded', 'ore_load_plugin_textdomain');
 
-// Include admin file if needed
-if (is_admin()){
-	include_once('register-enrol_admin.php');
-}
-
 // Include pluggable functions file if user specifies in settings
 if (!empty($ore_data['notification_override']) ){
-	include_once('pluggable.php');
+	include_once(ORE_PATH.'includes/ore_pluggable.php');
 }

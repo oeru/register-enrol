@@ -3,11 +3,10 @@
 require ORE_PATH . 'includes/ore_base.php';
 
 class OREMain extends OREBase {
-    protected static $instance = NULL; // this instance
-    private $errors = array();
+    public static $instance = NULL; // this instance
 
     // ORE -> ORE variables
-	public static  $current_user; // If logged in upon instantiation, it is a user object.
+	public static $current_user; // If logged in upon instantiation, it is a user object.
 	public static $templates = array(); // List of templates available in the plugin dir and theme (populated in init())
 	public static $template; // Name of selected template (if selected)
 	public static $data; // ore_data option
@@ -63,8 +62,16 @@ class OREMain extends OREBase {
     // from here is code adapted from Login with Ajax/LWA
 
 	// Actions to take upon initial action hook
-	public static function init(){
-        $this->log('in init');
+	public static function init() {
+        self::log('in init');
+
+
+        // allows us to add a class to our post
+        add_filter('body_class', array($this, 'add_post_class'));
+        add_filter('post_class', array($this, 'add_post_class'));
+        // create a default page if it doesn't already exist...
+        self::create_post(ORE_GETSTARTED_SLUG);
+
 		// Load ORE options
 		self::$data = get_option('ore_data');
 		// Remember the current user, in case there is a logout
@@ -76,18 +83,19 @@ class OREMain extends OREBase {
 		self::find_templates(path_join(WP_PLUGIN_DIR , basename( dirname( __FILE__ ) ). "/widget/"));
 		// Now, the parent theme (if exists)
 		if (get_stylesheet_directory() != get_template_directory()) {
-			self::find_templates( get_template_directory().'/plugins/'.);
+			self::find_templates(get_template_directory().'/plugins/');
 		}
 		// Finally, the child theme
 		self::find_templates(get_stylesheet_directory().'/plugins/'.ORE_ID);
 
 		// Generate URLs for login, remember, and register
+        // todo - look at using blog_id and get_site_url instead of site_url see: https://core.trac.wordpress.org/browser/tags/4.9.7/src/wp-includes/link-template.php#L0
 		self::$url_login = self::template_link(site_url('wp-login.php', 'login_post'));
 		self::$url_register = self::template_link(self::get_register_link());
 		self::$url_remember = self::template_link(site_url('wp-login.php?action=lostpassword', 'login_post'));
 
 		// Make decision on what to display
-		if (!empty($_REQUEST["ore"])) { //AJAX Request
+		if (!empty($_REQUEST["ore"])) { // AJAX Request
 		    self::ajax();
 		} elseif (isset($_REQUEST[OER_ID.'-widget'])) { // Widget Request via AJAX
 			$instance = (!empty($_REQUEST["template"])) ? array('template' => $_REQUEST["template"]) : array();
@@ -97,16 +105,21 @@ class OREMain extends OREBase {
 		} else {
 			// Enqueue scripts - Only one script enqueued here.... theme JS takes priority, then default JS
 			if (!is_admin()) {
-			    $js_url = defined('WP_DEBUG') && WP_DEBUG ? 'ore_script.js':'ore_script.js'; // make the latter .min.js for production!
-				wp_enqueue_script(OER_ID, self::locate_template_url($js_url), array('jquery'), ORE_VERSION);
-				wp_enqueue_style(OER_ID, self::locate_template_url('widget.css'), array(), ORE_VERSION );
+			    $js_url = defined('WP_DEBUG') && (WP_DEBUG) ? 'ore_script.js':'ore_script.js'; // make the latter .min.js for production!
+                // wp_enqueue_script(OER_ID, self::locate_template_url($js_url), array('jquery'), ORE_VERSION);
+                wp_enqueue_script(OER_ID, ORE_URL.'js/'.$js_url, array('jquery'), ORE_VERSION);
+				wp_enqueue_style(OER_ID, ORE_URL.'css/ore_style.css', array(), ORE_VERSION);
         		$schema = is_ssl() ? 'https':'http';
-        		$js_vars = array('ajaxurl' => admin_url('admin-ajax.php', $schema));
-        		//calendar translations
-        		wp_localize_script(ORE_ID, 'ORE', apply_filters('ore_js_vars', $js_vars));
+                $current_user = wp_get_current_user();
+                $this->log('current user: '.print_r($current_user, true));
+        		$js_vars = array('ajaxurl' => admin_url('admin-ajax.php', $schema),
+                    'user' => $current_user);
+        		// calendar translations
+                //wp_localize_script(ORE_ID, 'ore_data', apply_filters('ore_js_vars', $js_vars));
+                wp_localize_script(ORE_ID, 'ore_data', $js_vars);
 			}
 
-			//Add logout/in redirection
+			// Add logout/in redirection
 			add_action('wp_logout', 'OREMain::logout_redirect');
 			add_filter('logout_url', 'OREMain::logout_url');
 			add_filter('login_redirect', 'OREMain::login_redirect', 1, 3);
@@ -116,9 +129,9 @@ class OREMain extends OREBase {
 	}
 
 	public static function widgets_init(){
-		//Include and register widget
-		include_once('includes/ore_widget.php');
-		register_widget(ORE_WIDGET);
+		// Include and register widget
+		include_once(ORE_PATH.'includes/ore_widget.php');
+		register_widget(OREWidget);
 	}
 
 	/*
@@ -260,9 +273,7 @@ class OREMain extends OREBase {
 
 	public static function get_register_link(){
 	    $register_link = false;
-	    if (function_exists('bp_get_signup_page') && (empty($_REQUEST['action']) || ($_REQUEST['action'] != 'deactivate' && $_REQUEST['action'] != 'deactivate-selected'))) { // Buddypress
-	    	$register_link = bp_get_signup_page();
-	    } elseif (is_multisite()) { // Multisite/WPMS
+	    if (is_multisite()) { // Multisite/WPMS
             $register_link = site_url('wp-signup.php', 'login');
 	    } else {
 	    	$register_link = site_url('wp-login.php?action=register', 'login');
@@ -384,7 +395,7 @@ class OREMain extends OREBase {
 		if (is_user_logged_in()) {
 			// Check for custom templates or theme template default
 			$template_loc = ($template_loc == '' && self::$template) ? self::$templates[self::$template].'/widget_in.php' : $template_loc;
-			include ($template_loc != '' && file_exists($template_loc)) ? $template_loc : 'widget/default/widget_in.php';
+			include ($template_loc != '' && file_exists($template_loc)) ? $template_loc : ORE_PATH.'widget/default/widget_in.php';
 		} else {
 		    // quick/easy WPML fix, should eventually go into a separate file
 		    if (defined('ICL_LANGUAGE_CODE')) {
@@ -398,10 +409,10 @@ class OREMain extends OREBase {
                 }
 		    }
 			// First check for template in theme with no template folder (legacy)
-			$template_loc = locate_template(array('plugins/login-with-ajax/widget_out.php'));
+			$template_loc = locate_template(array(ORE_PATH.'widget/default/widget_out.php'));
 			// Then check for custom templates or theme template default
 			$template_loc = ($template_loc == '' && self::$template) ? self::$templates[self::$template].'/widget_out.php' : $template_loc;
-			include ($template_loc != '' && file_exists($template_loc)) ? $template_loc : 'widget/default/widget_out.php';
+			include ($template_loc != '' && file_exists($template_loc)) ? $template_loc : ORE_PATH.'widget/default/widget_out.php';
 			//quick/easy WPML fix, should eventually go into a seperate file
 			if (defined('ICL_LANGUAGE_CODE')) {
 			    foreach(array('login_form','ore_register_form', 'lostpassword_form') as $action) {
@@ -503,5 +514,98 @@ class OREMain extends OREBase {
 		}
 		return $return;
 	}
+
+    // create a default post to hold our login form...
+    public function create_post($slug) {
+        global $wp_rewrite;
+        // we might need to instantiate this
+        if ($wp_rewrite === NULL) { $wp_rewrite = new wp_rewrite; }
+        $post_id = -1; // this is non-post right now...
+        if (!($post_id = $this->slug_exists($slug))) {
+            $this->log('Creating a post at '.$slug.'...');
+            $post = $this->get_post($slug);
+            // check to see if this page title is already used...
+            $blog_page_check = get_page_by_title($post['post_title']);
+            if (!isset($blog_page_check->ID)) {
+                if (!($post_id = wp_insert_post($post))) {
+                    $this->log('Inserting post at '.$slug.' failed!');
+                    return false;
+                }
+            } else {
+                $this->log('Already have a page with this title - id: '.$blog_page_check->ID);
+                return false;
+            }
+        } else {
+            $this->log('Not creating the content again.');
+        }
+        $this->log('returing post id '.$post_id);
+        return $post_id;
+    }
+
+    // check to see if a post with the given slug already exists...
+    public function slug_exists($slug) {
+        global $wpdb;
+        $this->log('checking for a page at '.$slug);
+        if ($wpdb->get_row("SELECT post_name FROM wp_posts WHERE post_name = '" . $slug . "'", 'ARRAY_A')) {
+            return true;
+        }
+        return false;
+    }
+
+    public function add_post_class($classes) {
+        global $post;
+        $post_slug=$post->post_name;
+        $this->log('running class filter - post_slug = '.$post_slug);
+        if ($post_slug === ORE_GETSTARTED_SLUG) {
+            $this->log('setting class on '.ORE_GETSTARTED_SLUG.' to '.ORE_CLASS);
+            $classes[] = ORE_CLASS;
+        }
+        return $classes;
+    }
+
+    // provide the actual post itself
+    private function get_post($slug) {
+        $this->log('in get_post');
+        // create the post array with boilerplate settings...
+        $post = array(
+            'comment_status' => 'closed',
+            'ping_status' => 'closed',
+            'post_status' => 'publish',
+            'post_type' => 'page'
+        );
+        // Set the Author, Slug, title and content of the new post
+        $post['post_author'] = 1;  // the default
+        $post['post_name'] = $slug;
+        $post['post_slug'] = $slug;
+        $post['post_title']  = ORE_GETSTARTED;
+        $post['post_content'] = "<!-- wp:paragraph -->
+<p>If you are interested in higher education opportunities, optionally resulting in formal academic credits or even a qualification at a very reasonable cost, you've come to the right place! </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The OERu offers a range of courses in a variety of fields. The only cost to you will come <em>after</em> you've taken the course, and only if you would like your new found learning to be formally assessed by an <a href='https://oeru.org/oeru-partners'>OERu partner</a>! </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>You don't need to log in to see OERu learning materials, but to engage more fully, to have us keep track of your progress, and to accumulate evidence of participation, you can Register an account on our Course system - there's no cost, no credit card or anything!</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>If you've already got an account you can log in using your credentials. If you're not sure, try logging in. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>If you've forgot your password, no problem! You can request a password reset link be sent to you by email. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>[ore]</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>If you're already logged in, your details will be displayed here as confirmation!<br/></p>
+<!-- /wp:paragraph -->";
+        return $post;
+    }
 }
 ?>

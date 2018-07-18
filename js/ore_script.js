@@ -1,22 +1,19 @@
+/* created by Dave Lane, dave@oerfoundation.org, https://oeru.org */
+var DEBUG = true; // set to false to disable debugging
+var LOG = DEBUG ? console.log.bind(console) : function () {};
+LOG('ORE DEBUG = true'); // only prints if DEBUG = true
+
 /* Customize from here downwards */
 jQuery(document).ready( function($) {
-	//TODO some backwards compatability here -
-	if( $('#ORE').length > 0 ){
-		$('#ORE').addClass('ore');
-		$('#ORE_Status').addClass('ore-status');
-		$('#ORE_Register').addClass('ore-register');
-		$('#ORE_Remember').addClass('ore-remember');
-		$('#ORE_Links_Remember').addClass('ore-links-remember');
-		$('#ORE_Links_Remember_Cancel').addClass('ore-links-remember-cancel');
-		$('#ORE_Form').addClass('ore-form');
-	}
+
+    LOG('in jQuery. ore_data: ', ore_data);
 	/*
 	 * links
 	 * add action input htmls
 	 */
-	//Remember and register form AJAX
+	// Remember and register form AJAX
  	$('form.ore-form, form.ore-remember, div.ore-register form').submit(function(event){
-		//Stop event, add loading pic...
+		// Stop event, add loading pic...
  		event.preventDefault();
  		var form = $(this);F
  		var statusElement = form.find('.ore-status');

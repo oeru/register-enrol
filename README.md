@@ -17,7 +17,7 @@ This plugin provides streamlined services to allow a learner who wants to regist
 
 ## Features
 
-* fully multisite aware, allowing authenticated users to "enrol" in networks/blogs/subsites, what we call "courses" - the WP nomenclature is somewhat inconsistent.
+* fully multisite aware, allowing authenticated users to "enrol" in networks/blogs/subsites(the WP nomenclature is somewhat inconsistent), what we call "courses".
 * confirmation of all changes in authentication (registered, logged in, logged out) and course enrolled or unenrolled state
 * a login status indicator tab showing the user's status at all times, e.g. "anonymous visitor", "registered but not logged in", "logged in", and in the context of a course "not enrolled" or "enrolled".
 * modal dialogs for user interaction and messaging
@@ -30,3 +30,7 @@ This plugin provides streamlined services to allow a learner who wants to regist
 ## Requirements, Use Cases, and Future Plans
 
 See our [wiki](https://github.com/oeru/register-enrol/wiki) for discussions on these things.
+
+## Userful references:
+
+* For rewriting the URLs of login-related activities, the [custom-login-url plugin](https://wordpress.org/plugins/custom-login-url/) is very helpful

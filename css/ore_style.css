@@ -1,6 +1,17 @@
 @charset "utf-8";
 #branding { z-index: 9996; } /* a little naughty, twentyeleven fix */
 .ore { margin-bottom: 10px; }
+
+/* for the surrounding page container */
+article.ore-form .container {
+    background: #fefefe;
+    padding-bottom: 1em;
+}
+article.ore-form .container .entry-content > p,
+article.ore-form .container .entry-content > div.ore {
+    padding: 0 28px 0 28px;
+}
+
 form.ore-form, form.ore-remember, div.ore-register form { position: relative; }
 .ore table {
     width: 100% !important;
