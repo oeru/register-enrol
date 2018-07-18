@@ -56,14 +56,16 @@ define('ORE_GETSTARTED', 'Start Learning with the OERu');
 define('ORE_GETSTARTED_SLUG', 'start-learning');
 define('ORE_TEMPLATES', 'register-enrol');
 define('ORE_ID', 'register-enrol');
+define('ORE_STYLE', 'ore-style');
+define('ORE_SCRIPT', 'ore-script');
 define('ORE_CLASS', 'ore-form');
 // support link for users of this plugin...
 define('ORE_SUPPORT_FORUM', 'https://forums.oeru.org/t/register-enrol');
 define('ORE_SUPPORT_BLOG', 'https://course.oeru.org/support/studying-courses/register-enrol/');
 // admin details
-define('ORE_ADMIN_SLUG', 'ore-settings');
+/*define('ORE_ADMIN_SLUG', 'ore-settings');
 define('ORE_ADMIN_TITLE', 'Register Enrol Settings');
-define('ORE_ADMIN_MENU', 'ORE Settings');
+define('ORE_ADMIN_MENU', 'ORE Settings');*/
 // turn on debugging with true, off with false
 define('ORE_DEBUG', true);
 define('LOG_STREAM', getenv('LOG_STREAM'));
@@ -74,32 +76,11 @@ require ORE_PATH . 'includes/ore_app.php';
 if ( function_exists( 'add_action' ) ) {
     // this starts everything up!
     add_action('plugins_loaded', array(OREMain::get_instance(), 'init'));
-    if (is_admin()) {
+    /*if (is_admin()) {
         include_once(ORE_PATH.'includes/ore_admin.php');
         add_action('plugins_loaded', array(OREAdmin::get_instance(), 'init'));
-    }
+    }*/
 } else {
 	echo 'This only works as a WordPress plugin.';
 	exit;
-}
-
-// Set when to init this class
-//add_action('init', 'OREMain::init');
-add_action('widgets_init', 'OREMain::widgets_init');
-
-// Installation and Updates
-$ore_data = get_option('ore_data');
-if ( version_compare( get_option('ore_version',0), ORE_VERSION, '<' ) ){
-    include_once(ORE_PATH.'includes/ore_install.php');
-}
-
-// Add translation
-function ore_load_plugin_textdomain(){
-	load_plugin_textdomain(ORE_ID, false, ORE_PATH.'/langs');
-}
-add_action('plugins_loaded', 'ore_load_plugin_textdomain');
-
-// Include pluggable functions file if user specifies in settings
-if (!empty($ore_data['notification_override']) ){
-	include_once(ORE_PATH.'includes/ore_pluggable.php');
 }
