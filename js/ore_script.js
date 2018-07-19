@@ -12,97 +12,166 @@ jQuery(document).ready(function() {
 
     var $ = jQuery;
     var form = $(this);
+    var auth = false;
 
     /*
      * Customise the User Status info
      */
-    LOG('in status load function');
-    if ore_data.hasOwnProperty('user') {
-        user = ore_data.user;
-        // if the
-        if (user.hasOwnProperty('display_name')) {
-            LOG('display_name', user.display_name);
-            $('#ore-label').text(user.display_name);
+    function user_status(data) {
+        LOG('in status load function');
+        // with a null user, the user_id is set to 0
+        if (data.user.hasOwnProperty('user_id') && data.user.user_id != 0) {
+            LOG('user is authenticated.');
+            auth = true;
+            user = data.user;
+            // if the user's logged in, set useful status details
+            if (user.hasOwnProperty('display_name')) {
+                LOG('display_name', user.display_name);
+                $('#ore-label').text(user.display_name);
+                // update the hover text
+            } else {
+                LOG('using username instead ', user.username);
+                $('#ore-label').text(user.username);
+            }
+            $('#ore-login-modal').attr('title', 'You\'re logged in as '+user.username);
             if (user.hasOwnProperty('avatar_url')) {
                 LOG('avatar', user.avatar_url);
-                var avatar = $('<img>').attr({src: user.avatar_url + '?s=26&r=g'});
+                var avatar = $('<img>').attr({src: user.avatar_url + '?s=26&r=g', class: 'ore-avatar'});
                 $('#ore-icon').replaceWith(avatar);
             }
+            return true;
+        } else {
+            LOG('user not logged in');
+            return false;
+        }
+    }
+
+    /*
+     * Menu for an unauthenticated (anonymous) user
+     */
+    function visitor_menu(data) {
+        //data-toggle="modal"
+        //data-target="#userModal"
+        text = '<p>If you have aready registered, you can <span id="ore-login-button" class="button ore-button">Log In</span></p><p>If not, please <span id="ore-register-button" class="button ore-button">Register</span></p>';
+        //<ul><li><a id="item-1" class="menu-item">Clickable link 1</a></li><li><a id="item-2" class="menu-item">Clickable link 2</a></li><ul>
+        LOG('new text: '+text);
+        // enable menus
+        prepare_menu(text);
+    }
+    /*
+     * Menu for an unauthenticated (anonymous) user
+     */
+    function authenticated_menu(data) {
+        user = data.user;
+        text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p><p>You can <span class="button ore-button">Edit Your Profile</span></p>';
+        LOG('new text: '+text);
+        // enable menus
+        prepare_menu(text);
+    }
+    /*
+     * initialise jquery tooltips/menus with custom functionality
+     * credit for this: https://gist.github.com/csasbach/867744
+     */
+    var trigger = '.ore-trigger';  // trigger for menu content
+    var menu = 'ore-menu';  // the actual menu class
+
+    // on a click outside the menu, close the menu
+    $(document).click(function(){
+        LOG('closing menus!');
+        $(".ore-menu").hide();
+    });
+
+    function prepare_menu(text) {
+        // menu pause and fade times in milliseconds
+        var pausetime = 3000;
+        var postclicktime = 500;
+        var fadetime = 1000;
+
+        LOG('prepare menu');
+        $(trigger).each(function() {
+            // grab the content from the title attribute and remove the
+            // title attrib to avoid normal menu-on-hover behaviour
+            $(this).data('title', $(this).attr('title'));
+            LOG('sorted trigger with text '+$(this).data('title'));
+            $(this).removeAttr('title');
+            // manage clicks, e.g. from touch devices
+            $(trigger).click( function(e) {
+                LOG('click');
+                // don't send this click to the "hide menu" function below.
+                e.stopPropagation();
+
+                create_menu($(this), text);
+                enable_menu();
+                // after a pausetime pause, then fade out over fadetime second,
+                // unless a mouse is hovering
+                set_menu_fade();
+                // .next() means the menu popup node
+                $(this).next().hover( function() {
+                        $(this).next().animate({opacity: 0.9}, {duration: 0, complete: function() {
+                            // fade it back to full
+                            LOG('we got moving');
+                            $(this).fadeIn();
+                            // reset the clock
+                            set_menu_fade();
+                        }
+                    });
+                });
+                // if the user clicks within the box, fade shortly thereafter
+                $(this).next().click( function (e) {
+                    e.stopPropagation();
+                });
+            });
+        });
+        function set_menu_fade() {
+            $(this).next().animate({opacity: 0.9}, {duration: pausetime, complete: function() {
+                    $(this).fadeOut(fadetime);
+                }
+            });
+        }
+        function create_menu(trigger, text) {
+            trigger.next('.'+menu).remove();
+            // create the menu
+            trigger.after('<div class="'+menu+'">'+text+'</div>');
+            // manage positioning of the menus (voffset pixels above and hoffset left of trigger)
+            var right = 0;
+            var top = trigger.outerHeight();
+            //LOG('top right:'+right+', '+top);
+            trigger.next().css('right',right);
+            trigger.next().css('top',top);
+        }
+        function enable_menu() {
+            LOG('enabling menu');
+            $('.'+menu).each(function() {
+                // if the user explicitly clicks on a menu button, wait, and then fade
+                $('.'+menu).click(function() {
+                    LOG('click on menu');
+                    //$(this).remove();
+                    $(this).animate({opacity: 0.9}, {duration: postclicktime, complete: function() {
+                        $(this).fadeOut(fadetime);
+                    }});
+                });
+            });
         }
     }
     /*
-     * End User Status info
+     * End menu stuff
      */
+
+     /*
+      * Per page-load code
+      */
+    // run the user status when the page loads
+    // if the user is logged in, create the authenticated menu
+    // if not, the login/register menu for a visitor
+    if (user_status(ore_data)) {
+        authenticated_menu(ore_data);
+    } else {
+        visitor_menu(ore_data);
+    }
 
     /*
-     * initialise jquery tooltips with custom functionality
-     * credit for this: https://gist.github.com/csasbach/867744
+     * Standard events
      */
-    var tooltip = '.ore-tooltip';  // trigger for popup content
-    var popup = 'ore-popup';  // the actual popup class
-
-    function enable_tooltips() {
-        // popup display offsets
-        var voffset = 6;
-        var hoffset = 6;
-        // popup pause and fade times in milliseconds
-        var ptime = 3000;
-        var ftime = 1000;
-
-        LOG('enable tooltips');
-        $(tooltip).each(function() {
-            // grab the content from the title attribute and remove the
-            // title attrib to avoid normal popup-on-hover behaviour
-            $(this).data('title', $(this).attr('title'));
-            LOG('sorted tooltip with text '+$(this).data('title'));
-            $(this).removeAttr('title');
-            // show popup on mouseover/hover
-            $(tooltip).mouseover(function() {
-                LOG('mouseover');
-                // remove any currently displaying popups
-                $(this).next('.'+popup).remove();
-                // create the popup
-                text = $(this).data('title');
-                LOG('new text: '+text);
-                $(this).after('<div class="'+popup+'"><p>'+text+'</p></div>');
-                // manage positioning of the popups (voffset pixels above and hoffset left of tooltip trigger)
-                var left = $(this).position().left + $(this).width()+hoffset;
-    		    var top = $(this).position().top-voffset;
-        		$(this).next().css('left',left);
-                $(this).next().css('top',top);
-                enable_popup();
-            });
-            // manage clicks, e.g. from touch devices
-            $(tooltip).click(function() {
-                LOG('click');
-                $(this).mouseover();
-                // after a ptime pause, then fade out over ftime second
-                $(this).next().animate({opacity: 0.9}, {duration: ptime, complete: function() {
-                    $(this).fadeOut(ftime);
-                }});
-            });
-            // remove popup on mouseout
-            $(tooltip).mouseout(function() {
-                LOG('mouseout');
-    			$(this).next('.'+popup).remove();
-            });
-
-        });
-    }
-    function enable_popup() {
-        LOG('enabling popup');
-        $('.'+popup).each(function() {
-            // if the user explicitly clicks on a popup
-            $('.'+popup).click(function() {
-                LOG('click on popup');
-                $(this).remove();
-            });
-        });
-    }
-    /*
-     * End tooltip stuff
-     */
-
     // set this up to submit on 'enter'
     $('input').keypress( function (e) {
         c = e.which ? e.which : e.keyCode;
@@ -113,8 +182,13 @@ jQuery(document).ready(function() {
         }
     });
 
+
+
+    /*
+     * Custom events
+     */
     // handle the submit button being pushed
-    $('#ore-submit').click(function() {
+    /*$('#ore-submit').click(function() {
         $.ajax({
             type: 'POST',
             dataType: 'json',
@@ -131,8 +205,8 @@ jQuery(document).ready(function() {
                     // strip links out
                     msgs = data.messages;
                     LOG('Success msgs', msgs);
-                    // initialise tooltips
-                    enable_tooltips();
+                    // initialise menus
+                    prepare_menu();
                 }
                 LOG('returning true');
                 return true;
@@ -144,7 +218,7 @@ jQuery(document).ready(function() {
         // if nothing else returns this first, there was a problem...
         LOG('completed submit... returning false');
         return false;
-    });
+    });*/
 
     // the end of the jQuery loop...
 }); // });

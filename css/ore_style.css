@@ -9,3 +9,50 @@ article.ore-form .container .entry-content > p,
 article.ore-form .container .entry-content > div.ore {
     padding: 0 28px 0 28px;
 }
+
+/* buttons */
+.ore-menu p .ore-button { margin-bottom: 0; }
+
+/* status */
+#ore-login-modal .ore-avatar { border-radius: 8px; }
+
+/* menus and popups */
+.ore-menu {
+    display: block;
+    position: absolute;
+    padding: 12px;
+    width: 400px;
+    border: solid 1px #F7BD27;
+    background-color: #fff;
+    box-shadow: 4px 4px 10px #ccc;
+    -moz-box-shadow: 4px 4px 10px #ccc;
+    -webkit-box-shadow: 4px 4px 10px #ccc;
+    border-radius: 10px 0 10px 10px;
+    z-index: 10000;
+}
+
+.ore-menu p {
+    color: #000;
+    word-wrap: normal;
+    word-break: normal;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.ore-trigger {
+}
+
+a.ore-close.ui-btn-left {
+    left: 0;
+    top: 0;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    background-image: url(img/close.16x16.png);
+    background-repeat: no-repeat;
+    opacity: 0.5;
+}

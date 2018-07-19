@@ -71,7 +71,7 @@ class OREMain extends OREBase {
             // for security's sake, don't even show the password hash...
             unset($current->data->user_pass);
         }
-        $this->log('current user: '.print_r($current, true));
+        //$this->log('current user: '.print_r($current, true));
         // initialise this with the default values
         //$user = $this->data;
         $user = array();
