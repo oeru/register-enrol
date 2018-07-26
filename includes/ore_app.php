@@ -2,15 +2,16 @@
 
 require ORE_PATH . 'includes/ore_base.php';
 // get the countries list...
-include_once ORE_PATH . 'includes/ore_countries.php';
+require ORE_PATH . 'includes/ore_countries.php';
+// get the modal dialogue definitions
+require ORE_PATH . 'includes/ore_modals.php';
 
 class OREMain extends OREBase {
     public static $instance = NULL; // this instance
-
     // ORE -> ORE variables
 	public static $current_user; // If logged in upon instantiation, it is a user object.
-
     // returns an instance of this class if called, instantiating if necessary
+
     public static function get_instance() {
         NULL === self::$instance and self::$instance = new self();
         return self::$instance;
@@ -27,7 +28,8 @@ class OREMain extends OREBase {
         wp_localize_script(ORE_SCRIPT, 'ore_data', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_submit' => wp_create_nonce('ore-submit-nonce'),
-            'user' => $this->get_user()
+            'user' => $this->get_user(),
+            'modals' => $this->get_modals()
         ));
         // our css
         wp_register_style(ORE_STYLE, ORE_URL.'css/ore_style.css');
@@ -93,6 +95,7 @@ class OREMain extends OREBase {
         //$this->data = $user;
         return $user;
     }
+
     // http://2.gravatar.com/avatar/88814fd4a3a14b6a85b56980744c87fd?s=26&r=g
     /*// get the user's first_name
     public function get_first_name($id) { return $this->get_meta($id, 'first_name'); }
@@ -125,6 +128,73 @@ class OREMain extends OREBase {
         if (update_user_meta($id, $key, $val)) { return true; }
         return false;
     }
+
+    // get modal dialogues in a form that can be injected by javascript
+    public function get_modals() {
+        global $modals;
+
+        $dialogs = array();
+        foreach($modals as $index => $val) {
+            $markup = '<div id="ore-modal-'.$val['token'].'" class="ore-modal modal fade">';
+            $markup .= '<div class="modal-dialog"><div class="modal-content">';
+            if (isset($val['title'])) {
+                $this->log('getting the modal: "'.$val['title'].'"');
+                $markup .= '<div class="modal-header"><h1 class="ore-title">'.$val['title'].'</h1></div><!-- modal-header -->';
+                $markup .= '<button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">x</span></button>';
+            }
+            if (isset($val['markup'])) {
+                $markup .= '<div class="modal-body ore-body">'.$val['markup'].'</div>';
+            }
+            $button_classes = 'button ore-button';
+            $both = (is_array($val['default']) && is_array($val['alternative'])) ? true : false;
+            if (is_array($val['default'])) {
+                $id = 'ore-'.$val['token'].'-default-button';
+                $classes = $button_classes.' ore-default';
+                $div_classes = ($both) ? ' ore-left' : '';
+                $name = 'ore-default-'.$val['token'];
+                $default = $val['default'];
+                $markup .= '<div class="modal-footer"><div class="ore-default-wrapper'.$div_classes.'">';
+                if (isset($default['label'])) {
+                    $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
+                        $default['label'].'</span>';
+                    unset($default['label']);
+                }
+                if (isset($default['detail'])) {
+                    //$markup .= '<p class="ore-detail">'._e($default['detail']).'</p>';
+                    $markup .= '<p class="ore-detail">'.$default['detail'].'</p>';
+                    unset($default['detail']);
+                }
+                $markup .= '</div><!-- ore-default-wrapper -->';
+                $dialogs[$index]['default'] = $default;
+                if (is_array($val['alternative'])) {
+                    $id = 'ore-'.$val['token'].'-alternative-button';
+                    $classes = $button_classes.' ore-alternative';
+                    $div_classes = ($both) ? ' ore-right' : '';
+                    $name = 'ore-alternatve-'.$val['token'];
+                    $alt = $val['alternative'];
+                    $markup .= '<div class="ore-alternative-wrapper'.$div_classes.'">';
+                    if (isset($alt['label'])) {
+                        $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
+                            $alt['label'].'</span>';
+                        unset($alt['label']);
+                    }
+                    if (isset($alt['detail'])) {
+                        //$markup .= '<p class="ore-detail">'._e($alt['detail']).'</p>';
+                        $markup .= '<p class="ore-detail">'.$alt['detail'].'</p>';
+                        unset($alt['detail']);
+                    }
+                    $markup .= '</div><!-- ore-alt-wrapper -->';
+                    $dialogs[$index]['alternative'] = $alt;
+                }
+                $markup .= '</div><!-- modal-footer -->';
+            }
+            $markup .= '</div><!-- modal-content --></div><!-- modal-dialog --></div><!-- ore-modal -->';
+            $dialogs[$index]['markup'] = $markup;
+            //$this->log('dialog['.$name.']: '.print_r($dialogs[$name], true));
+        }
+        return $dialogs;
+    }
+
     // create a default post to hold our login form...
     public function create_post($slug) {
         global $wp_rewrite;
@@ -222,4 +292,3 @@ class OREMain extends OREBase {
         return $post;
     }
 }
-?>

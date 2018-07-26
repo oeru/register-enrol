@@ -52,7 +52,8 @@ jQuery(document).ready(function() {
     function visitor_menu(data) {
         //data-toggle="modal"
         //data-target="#userModal"
-        text = '<p>If you have aready registered, you can <span id="ore-login-button" class="button ore-button">Log In</span></p><p>If not, please <span id="ore-register-button" class="button ore-button">Register</span></p>';
+        /*text = '<div class="ore-left"><p>If you have already registered, please</p><p style="text-align: center;"><span id="ore-login-button" class="button ore-button">Log In</span></p></div><div class="ore-right"><p>If not, we invite you to</p><p style="text-align: center;"> <span id="ore-register-button" class="button ore-button">Register</span></p></div>';*/
+        text = '<div class="ore-left"><p>If you do not yet have a login, we invite you to</p><p style="text-align: center;"> <span id="ore-register-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Register</span></p></div><div class="ore-right"><p>If you have already registered, please</p><p style="text-align: center;"><span id="ore-login-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Log In</span></p></div>';
         //<ul><li><a id="item-1" class="menu-item">Clickable link 1</a></li><li><a id="item-2" class="menu-item">Clickable link 2</a></li><ul>
         LOG('new text: '+text);
         // enable menus
@@ -63,7 +64,7 @@ jQuery(document).ready(function() {
      */
     function authenticated_menu(data) {
         user = data.user;
-        text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p><p>You can <span class="button ore-button">Edit Your Profile</span></p>';
+        text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p><p>You can <span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span></p>';
         LOG('new text: '+text);
         // enable menus
         prepare_menu(text);
@@ -96,14 +97,16 @@ jQuery(document).ready(function() {
             $(this).removeAttr('title');
             // manage clicks, e.g. from touch devices
             $(trigger).click( function(e) {
-                LOG('click');
-                // don't send this click to the "hide menu" function below.
-                e.stopPropagation();
 
                 create_menu($(this), text);
                 enable_menu();
                 // after a pausetime pause, then fade out over fadetime second,
                 // unless a mouse is hovering
+                /*$(.ore-button).click(function() {
+                    LOG('button clicked!');
+                });*/
+
+                LOG('click');
                 set_menu_fade();
                 // .next() means the menu popup node
                 $(this).next().hover( function() {
@@ -117,9 +120,35 @@ jQuery(document).ready(function() {
                     });
                 });
                 // if the user clicks within the box, fade shortly thereafter
+                //
+                // Process Menu Click Events
                 $(this).next().click( function (e) {
-                    e.stopPropagation();
+                    LOG('click in menu - this should be passed on!')
+                    //menu = $(this).next();
+                    LOG('this = ', $(this));
+                    LOG('e = ', e);
+                    if (e.target.id == 'ore-edit-profile-button') {
+                        LOG('Launch Edit Profile!');
+                        //window.history.pushState("object or string", "OERu Register Enrol - Edit Profile", "/register-enrol/edit-profile");
+                        LOG('data: ', ore_data.modals.edit_profile);
+                        form = $('#ore-login-status').append(ore_data.modals.edit_profile.markup);
+                        //form = $(this).next().append(ore_data.modals.edit_profile.markup);
+                        //form.attr('id', 'ore-container');
+                        //LOG('form ', form);
+                    } else if (e.target.id == 'ore-login-button') {
+                        LOG('Launch Login!');
+                        window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
+                    } else if (e.target.id == 'ore-register-button') {
+                        LOG('Launch Register!');
+                        window.history.pushState("object or string", "OERu Register Enrol - Register", "/register-enrol/register");
+                    } else {
+                        LOG('click within menu isn\'t on a known button');
+                        e.stopPropagation();
+                    }
+
                 });
+                // don't send this click to the "hide menu" function below.
+                e.stopPropagation();
             });
         });
         function set_menu_fade() {
@@ -144,7 +173,7 @@ jQuery(document).ready(function() {
             $('.'+menu).each(function() {
                 // if the user explicitly clicks on a menu button, wait, and then fade
                 $('.'+menu).click(function() {
-                    LOG('click on menu');
+                    LOG('click on menu to start delayed fade out');
                     //$(this).remove();
                     $(this).animate({opacity: 0.9}, {duration: postclicktime, complete: function() {
                         $(this).fadeOut(fadetime);
@@ -154,12 +183,29 @@ jQuery(document).ready(function() {
         }
     }
     /*
-     * End menu stuff
-     */
+    * End menu stuff
+    */
 
-     /*
-      * Per page-load code
-      */
+    /*
+    * Modal dialogue stuff
+    */
+    $('#ore-container').on('show.bs.modal', '.ore-modal', function(e) {
+        LOG('showing modal! e ', e);
+        $(this).modal('show');
+    });
+    $('#ore-container').on('click', '.ore-button', function(e) {
+        LOG('click! e ', e);
+        $(this).parent().modal('hide');
+    });
+    $('#')
+
+    /*
+    * End Modal dialogue stuff
+    */
+
+    /*
+    * Per page-load code
+    */
     // run the user status when the page loads
     // if the user is logged in, create the authenticated menu
     // if not, the login/register menu for a visitor
@@ -181,8 +227,6 @@ jQuery(document).ready(function() {
             return false;
         }
     });
-
-
 
     /*
      * Custom events

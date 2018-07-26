@@ -12,9 +12,39 @@ article.ore-form .container .entry-content > div.ore {
 
 /* buttons */
 .ore-menu p .ore-button { margin-bottom: 0; }
+#ore-container .ore-left {
+    float: left;
+    width: 50%;
+}
+#ore-container .ore-right {
+    float: right;
+    width: 50%;
+}
+#ore-container p {
+    line-height: normal;
+}
+#ore-container .ore-button {
+    padding: 6px 8px;
+    color: #333 !important;
+    background-color: #97BB6D;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px #AAA;
+    text-transform: none;
+    text-decoration: none;
+}
+#ore-container .ore-button:hover {
+    color: #000;
+    box-shadow: 4px 4px 10px #999;
+    text-decoration: none;
+}
+#ore-container .ore-button:active {
+    box-shadow: 0px 0px 10px #999;
+    text-decoration: none;
+}
+#ore-container .ore-button:visited { text-decoration: none; }
 
 /* status */
-#ore-login-modal .ore-avatar { border-radius: 8px; }
+#ore-container .ore-avatar { border-radius: 8px; }
 
 /* menus and popups */
 .ore-menu {
@@ -45,7 +75,7 @@ article.ore-form .container .entry-content > div.ore {
 .ore-trigger {
 }
 
-a.ore-close.ui-btn-left {
+/*a.ore-close.ui-btn-left {
     left: 0;
     top: 0;
     display: inline-block;
@@ -55,4 +85,28 @@ a.ore-close.ui-btn-left {
     background-image: url(img/close.16x16.png);
     background-repeat: no-repeat;
     opacity: 0.5;
+}*/
+
+/* modal styles */
+#ore-container .modal-dialog {
+    margin: 30px auto;
 }
+#ore-container .modal-content {
+    position: relative;
+    background-color: #fefefe;
+    border: 1px solid #F7BD27;
+    border-radius: 10px;
+    margin-top: 20px;
+    padding: 0 20px;
+    box-shadow: 0 5px 15px rgb(0,0,0,0.5);
+}
+#ore-container .ore-modal.modal h1 {
+    color: #000;
+    font-size: 20px;
+    margin: 20px 0 0 0;
+}
+#ore-container .ore-modal.modal p {
+    color: #000;
+    padding: 0px 20px;
+}
+#ore-container .ore-modal.modal .modal-footer { text-align: center; }
