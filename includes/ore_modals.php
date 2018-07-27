@@ -23,11 +23,13 @@ static $modals = array(
         'token' => 'login',
         'default' => array(
             'label' => 'Log in',
+            'class' => 'submit',
             'detail' => 'Once you have entered your details (don\'t let anyone look over your shoulder while you enter your password!), you can log in.',
             'success' => 'successful_login',
             'failed' => 'failed_login',
         'alternative' => array(
             'label' => 'I need to register',
+            'class' => 'submit',
             'detail' => 'If you haven\'t previously registered an account, you need to do that first.',
             'destination' => 'register',
         ),
@@ -38,6 +40,7 @@ static $modals = array(
         'token' => 'successful-login',
         'default' => array(
             'label' => 'Ok',
+            'class' => 'submit',
         ),
     ),
     'failed_login' => array(
@@ -46,6 +49,7 @@ static $modals = array(
         'token' => 'failed-login',
         'default' => array(
             'label' => 'Try again',
+            'class' => 'submit',
             'detail' => 'If you think you might have mistyped or entered the wrong details, you can try again. Or you can register, if you haven\'t previously.',
             'destination' => 'login'
         ),
@@ -57,6 +61,7 @@ static $modals = array(
             '<p class="username"><input id="ore-username" class="username" value="" type="text">username</input></p>',
         'default' => array(
             'label' => 'Reset Password',
+            'class' => 'submit',
             'detail' => 'A link will be sent to your registered email address. Check your spam folder if it doesn\'t appear within a few minutes')
         ),
     ),
@@ -66,11 +71,13 @@ static $modals = array(
         'token' => 'register',
         'default' => array(
             'label' => 'Register',
+            'class' => 'submit',
             'success' => 'successful_registration',
             'failed' => 'failed_registration',
         ),
         'alternative' => array(
             'label' => 'Login',
+            'class' => 'submit',
             'detail' => 'If you think you might have previously registered, you can try logging in.',
             'destination' => 'login',
         ),
@@ -81,32 +88,24 @@ static $modals = array(
         'token' => 'successful-login',
         'default' => array(
             'label' => 'Ok',
+            'class' => 'submit',
         ),
     ),
     'failed_registration' => array(
         'title' => 'Registration failed',
-        'markup' => '<p>Your registration failed because of the following {error}:</p> {error_list}',
-        'token' => 'failed-registration',
-        'default' => array(
-            'label' => 'Try again',
-            'detail' => 'If you think you might have mistyped or entered the wrong details, you can try again. Or if you think you might have registered perviously, you can try logging in.',
-            'destination' => 'register'
-        ),
-    ),
-    'edit_profile' => array(
-        'title' => 'Edit your profile',
+        'title' => 'Register a new user',
         'markup' => '<div class="form-group">'.
                 '<label for="firstname">First Name</label>'.
-                '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName">'.
+                '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName" value={first_name}>'.
                 '<span id="helpFirstName" class="help-block">Your first or given name(s) as you would like it(them) displayed.</span>'.
                 '<label for="lastname">Last Name</label>'.
-                '<input type="text" class="form-control" id="last-name" placeholder="your last name" aria-describedby="helpLastName">'.
+                '<input type="text" class="form-control" id="last-name" placeholder="your last name" aria-describedby="helpLastName" value={last_name}>'.
                 '<span id="helpLastName" class="help-block">Your last or family name(s) as you would like it(them) displayed.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="username">Username</label>'.
                 '<input type="text" class="form-control" id="username" placeholder="username" aria-describedby="helpUsername">'.
-                '<span id="helpUsername" class="help-block">Your preferred username. Allowed letters: a-z0-9_-. Spaces and other special characters not allowed.</span>'.
+                '<span id="helpUsername" class="help-block">Your preferred username. Allowed letters: a-z0-9_-. Spaces and other special characters not allowed. Please note: this username can only be altered by an administrator after it is created, so please choose wisely.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="display-name">Display Name</label>'.
@@ -122,22 +121,64 @@ static $modals = array(
           	'</div>'.
       		'<div class="form-group">'.
             	'<label for="email">Email</label>'.
-                '<input type="text" class="form-control" id="email" placeholder="me@example.com">'.
+                '<input type="text" class="form-control" id="email" placeholder="me@example.com" value="{email}">'.
           	'</div>'.
         	'<div class="form-group">'.
                 '<label for="usercountry">Country of origin</label>'.
                 '{country_picker}'.
-                '<span id="helpUserCountry" class="help-block">Select the country with which you most closely identify.</span>'.
+                '<span id="helpUserCountry" class="help-block">Select the country with which you most closely identify, which may not be the one in which you currently are, or where you live.</span>'.
+	      	 '</div>',
+        'token' => 'failed-registration',
+        'default' => array(
+            'label' => 'Try again',
+            'class' => 'submit',
+            'detail' => 'If you think you might have mistyped or entered the wrong details, you can try again. Or if you think you might have registered perviously, you can try logging in.',
+            'destination' => 'register'
+        ),
+    ),
+    'edit_profile' => array(
+        'title' => 'Edit profile for user <strong>{username}</strong>',
+        'markup' => '<div class="form-group">'.
+                '<label for="firstname">First Name</label>'.
+                '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName" value="{first_name}">'.
+                '<span id="helpFirstName" class="help-block">Your first or given name(s) as you would like it(them) displayed.</span>'.
+                '<label for="lastname">Last Name</label>'.
+                '<input type="text" class="form-control" id="last-name" placeholder="your last name" aria-describedby="helpLastName" value="{last_name}">'.
+                '<span id="helpLastName" class="help-block">Your last or family name(s) as you would like it(them) displayed.</span>'.
+            '</div>'.
+            '<div class="form-group">'.
+                '<label for="display-name">Display Name</label>'.
+                '<input type="text" class="form-control" id="display-name" placeholder="Ms Sue Smith" aria-describedby="helpDisplayName" value="{display_name}">'.
+                '<span id="helpDisplayName" class="help-block">Your publicly visible name or preferred nickname.</span>'.
+          	'</div>'.
+            '<div class="form-group">'.
+                '<label for="password">Password</label>'.
+                '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
+                '<span id="helpPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols. Leave blank if you do not want to update your password!</span>'.
+                '<label for="confirm-password">Confirm password</label>'.
+                '<input type="password" class="form-control" id="confirm-password" aria-describedby="helpConfirmPassword">'.
+                '<span id="helpConfirmPassword" class="help-block">This must be identical to the Password field. Leave blank if you do not want to update your password!</span>'.
+          	'</div>'.
+      		'<div class="form-group">'.
+            	'<label for="email">Email</label>'.
+                '<input type="text" class="form-control" id="email" placeholder="me@example.com" value="{email}">'.
+          	'</div>'.
+        	'<div class="form-group">'.
+                '<label for="usercountry">Country of origin</label>'.
+                '{country_picker}'.
+                '<span id="helpUserCountry" class="help-block">Select the country with which you most closely identify, which may not be the one in which you currently are, or where you live.</span>'.
 	      	 '</div>',
         'token' => 'edit-profile',
         'default' => array(
             'label' => 'Save',
+            'class' => 'submit',
             'detail' => 'Save your changes.',
             'success' => 'profile_saved',
             'failed' => 'profile_save_failed',
         ),
         'alternative' => array(
             'label' => 'Cancel',
+            'class' => 'cancel',
             'detail' => 'Ignore these changes. Leave your profile unchanged.',
         ),
     ),
@@ -148,6 +189,7 @@ static $modals = array(
         'token' => 'session-expired',
         'default' => array(
             'label' => 'Renew Session',
+            'class' => 'submit',
             'detail' => 'This is a security precaution to reduce the likelihood of an unauthorised person taking over your account if, for example, you accidentally left yourself logged into a computer at an Internet cafe or library.'
         )
     ),
@@ -157,12 +199,14 @@ static $modals = array(
         'token' => 'enrol',
         'default' => array(
             'label' => 'Enrol',
+            'class' => 'submit',
             'detail' => 'Once enrolled, have no fear: you can leave the course any time you like.',
             'success' => 'successfully_enrolled',
             'failed' => 'failed_to_enrol',
         ),
         'alternative' => array(
-            'label' => 'Cancel'
+            'label' => 'Cancel',
+            'class' => 'cancel',
         ),
     ),
     'leave' => array(
@@ -171,6 +215,7 @@ static $modals = array(
         'token' => 'leave',
         'default' => array(
             'label' => 'Unenrol',
+            'class' => 'submit',
         ),
     ),
 );

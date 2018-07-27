@@ -25,11 +25,14 @@ class OREMain extends OREBase {
         // add the ajax handlers
         wp_enqueue_script(ORE_SCRIPT, ORE_URL.'js/ore_script.js', array(
             'jquery', 'jquery-form'));
+        $user_array = $this->get_user();
+        $user_country = (isset($user_array['country'])) ? $user_array['country'] : "";
         wp_localize_script(ORE_SCRIPT, 'ore_data', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_submit' => wp_create_nonce('ore-submit-nonce'),
             'user' => $this->get_user(),
-            'modals' => $this->get_modals()
+            'modals' => $this->get_modals(),
+            'country_select' => $this->get_country_selector($user_country)
         ));
         // our css
         wp_register_style(ORE_STYLE, ORE_URL.'css/ore_style.css');
@@ -157,14 +160,15 @@ class OREMain extends OREBase {
                 $default = $val['default'];
                 $markup .= '<div class="modal-footer"><div class="ore-default-wrapper'.$div_classes.'">';
                 if (isset($default['label'])) {
+                    if (isset($default['class'])) { $classes .= ' '.$default['class']; }
                     $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
                         $default['label'].'</span>';
                     unset($default['label']);
-                }
-                if (isset($default['detail'])) {
-                    //$markup .= '<p class="ore-detail">'._e($default['detail']).'</p>';
-                    $markup .= '<p class="ore-detail">'.$default['detail'].'</p>';
-                    unset($default['detail']);
+                    if (isset($default['detail'])) {
+                        //$markup .= '<p class="ore-detail">'._e($default['detail']).'</p>';
+                        $markup .= '<p class="ore-detail">'.$default['detail'].'</p>';
+                        unset($default['detail']);
+                    }
                 }
                 $markup .= '</div><!-- ore-default-wrapper -->';
                 $dialogs[$index]['default'] = $default;
@@ -176,14 +180,15 @@ class OREMain extends OREBase {
                     $alt = $val['alternative'];
                     $markup .= '<div class="ore-alternative-wrapper'.$div_classes.'">';
                     if (isset($alt['label'])) {
+                        if (isset($alt['class'])) { $classes .= ' '.$alt['class']; }
                         $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
                             $alt['label'].'</span>';
                         unset($alt['label']);
-                    }
-                    if (isset($alt['detail'])) {
-                        //$markup .= '<p class="ore-detail">'._e($alt['detail']).'</p>';
-                        $markup .= '<p class="ore-detail">'.$alt['detail'].'</p>';
-                        unset($alt['detail']);
+                        if (isset($alt['detail'])) {
+                            //$markup .= '<p class="ore-detail">'._e($alt['detail']).'</p>';
+                            $markup .= '<p class="ore-detail">'.$alt['detail'].'</p>';
+                            unset($alt['detail']);
+                        }
                     }
                     $markup .= '</div><!-- ore-alt-wrapper -->';
                     $dialogs[$index]['alternative'] = $alt;
@@ -293,4 +298,25 @@ class OREMain extends OREBase {
 <!-- /wp:paragraph -->";
         return $post;
     }
+
+    // return a suitably formatted select widget with the countries in it to pass
+    // to jquery to use
+    public function get_country_selector($user_country = "") {
+        global $countries;
+        $this->log('country for user: '.$user_country);
+        $user_country = "";
+        $selector = '<select id="ore-country" name="country" class="form-control">';
+        $selector .= '<option value=""></option>';
+        foreach($countries as $abbr => $country) {
+            $selected = "";
+            if ($user_country == $abbr) {
+                $this->log('selected country for user: '.$abbr);
+                $selected = ' selected="true"';
+            }
+            $selector .= '<option value="' . $abbr . '"'.$selected.'>' . $country . '</option>';
+        }
+        $selector .= '</select><!-- ore-country -->';
+        return $selector;
+    }
+
 }

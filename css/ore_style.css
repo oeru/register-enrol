@@ -157,3 +157,8 @@ article.ore-form .container .entry-content > div.ore {
     padding: 0px 20px;
 }
 #ore-container .ore-modal.modal .modal-footer { text-align: center; }
+#ore-container .ore-modal p.ore-detail {
+    word-break: normal;
+    font-size: 90%;
+    color: #737373 !important;
+}

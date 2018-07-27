@@ -50,11 +50,7 @@ jQuery(document).ready(function() {
      * Menu for an unauthenticated (anonymous) user
      */
     function visitor_menu(data) {
-        //data-toggle="modal"
-        //data-target="#userModal"
-        /*text = '<div class="ore-left"><p>If you have already registered, please</p><p style="text-align: center;"><span id="ore-login-button" class="button ore-button">Log In</span></p></div><div class="ore-right"><p>If not, we invite you to</p><p style="text-align: center;"> <span id="ore-register-button" class="button ore-button">Register</span></p></div>';*/
         text = '<div class="ore-left"><p>If you do not yet have a login, we invite you to</p><p style="text-align: center;"> <span id="ore-register-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Register</span></p></div><div class="ore-right"><p>If you have already registered, please</p><p style="text-align: center;"><span id="ore-login-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Log In</span></p></div>';
-        //<ul><li><a id="item-1" class="menu-item">Clickable link 1</a></li><li><a id="item-2" class="menu-item">Clickable link 2</a></li><ul>
         LOG('new text: '+text);
         // enable menus
         prepare_menu(text);
@@ -81,6 +77,43 @@ jQuery(document).ready(function() {
         LOG('closing menus!');
         $(".ore-menu").hide();
     });
+
+    // replace country selector tag with country selector
+    function add_countries(form, select) {
+        return form.replace('{country_picker}', country_select);
+    }
+
+    // set the country of the current user
+    function set_country(form, country) {
+        LOG('setting country to ', country);
+        form.find('#ore-country').val(country);
+    }
+
+    // replace user tokens
+    function replace_user_tokens(string, user) {
+        for (var key in user) {
+            LOG('key: '+key+' val: '+user[key]);
+            string = string.replace('{'+key+'}', user[key]);
+        }
+        return string;
+    }
+
+    function value_in_object(obj, needle) {
+        match = false;
+        obj.forEach(function (value, key) {
+            LOG('key: '+key+' val: '+String(value)+' needle: '+String(needle));
+            if (String(needle).trim() == String(value).trim()) {
+                LOG('strings are equal!');
+                match = true;
+            }
+        })
+        return match;
+    }
+
+    // hide all modals...
+    function hide_modasls() {
+
+    }
 
     function prepare_menu(text) {
         // menu pause and fade times in milliseconds
@@ -109,7 +142,9 @@ jQuery(document).ready(function() {
                 LOG('click');
                 set_menu_fade();
                 // .next() means the menu popup node
-                $(this).next().hover( function() {
+                // this might be breaking the hiding of modal dialogues when you next open the menu
+                // so leave commented out unless testing!!
+                /*$(this).next().hover( function() {
                         $(this).next().animate({opacity: 1.0}, {duration: 0, complete: function() {
                             // fade it back to full
                             LOG('we got moving');
@@ -118,7 +153,7 @@ jQuery(document).ready(function() {
                             set_menu_fade();
                         }
                     });
-                });
+                });*/
                 // if the user clicks within the box, fade shortly thereafter
                 //
                 // Process Menu Click Events
@@ -130,11 +165,15 @@ jQuery(document).ready(function() {
                     if (e.target.id == 'ore-edit-profile-button') {
                         LOG('Launch Edit Profile!');
                         //window.history.pushState("object or string", "OERu Register Enrol - Edit Profile", "/register-enrol/edit-profile");
-                        LOG('data: ', ore_data.modals.edit_profile);
-                        form = $('#ore-login-status').append(ore_data.modals.edit_profile.markup);
-                        //form = $(this).next().append(ore_data.modals.edit_profile.markup);
-                        //form.attr('id', 'ore-container');
-                        //LOG('form ', form);
+                        // tweak the text to replace relevant placeholders..
+                        form = ore_data.modals.edit_profile.markup;
+                        country_select = ore_data.country_select;
+                        //form = form.replace('{country_picker}', country_select);
+                        //LOG('form: ', form);
+                        form = replace_user_tokens(form, ore_data.user);
+                        form = add_countries(form, country_select);
+                        form = $('#ore-login-status').append(form);
+                        set_country(form, ore_data.user.country);
                     } else if (e.target.id == 'ore-login-button') {
                         LOG('Launch Login!');
                         window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
@@ -194,10 +233,13 @@ jQuery(document).ready(function() {
         $(this).modal('show');
     });
     $('#ore-container').on('click', '.ore-button', function(e) {
-        LOG('click! e ', e);
-        $(this).parent().modal('hide');
+        LOG('click! e.target ', e.target);
+        if (value_in_object(e.target.classList, 'cancel')) {
+            LOG('hide the modal!');
+              //$('#ore-container .ore-modal.modal').modal('hide');
+              $('#ore-container .ore-modal.modal').hide();
+        }
     });
-    $('#')
 
     /*
     * End Modal dialogue stuff
