@@ -110,7 +110,7 @@ jQuery(document).ready(function() {
                 set_menu_fade();
                 // .next() means the menu popup node
                 $(this).next().hover( function() {
-                        $(this).next().animate({opacity: 0.9}, {duration: 0, complete: function() {
+                        $(this).next().animate({opacity: 1.0}, {duration: 0, complete: function() {
                             // fade it back to full
                             LOG('we got moving');
                             $(this).fadeIn();
@@ -152,7 +152,7 @@ jQuery(document).ready(function() {
             });
         });
         function set_menu_fade() {
-            $(this).next().animate({opacity: 0.9}, {duration: pausetime, complete: function() {
+            $(this).next().animate({opacity: 1.0}, {duration: pausetime, complete: function() {
                     $(this).fadeOut(fadetime);
                 }
             });
@@ -175,7 +175,7 @@ jQuery(document).ready(function() {
                 $('.'+menu).click(function() {
                     LOG('click on menu to start delayed fade out');
                     //$(this).remove();
-                    $(this).animate({opacity: 0.9}, {duration: postclicktime, complete: function() {
+                    $(this).animate({opacity: 1.0}, {duration: postclicktime, complete: function() {
                         $(this).fadeOut(fadetime);
                     }});
                 });

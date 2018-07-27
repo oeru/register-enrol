@@ -139,8 +139,10 @@ class OREMain extends OREBase {
             $markup .= '<div class="modal-dialog"><div class="modal-content">';
             if (isset($val['title'])) {
                 $this->log('getting the modal: "'.$val['title'].'"');
-                $markup .= '<div class="modal-header"><h1 class="ore-title">'.$val['title'].'</h1></div><!-- modal-header -->';
+                $markup .= '<div class="modal-header">';
                 $markup .= '<button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">x</span></button>';
+                $markup .= '<h1 class="ore-title">'.$val['title'].'</h1>';
+                $markup .= '</div><!-- modal-header -->';
             }
             if (isset($val['markup'])) {
                 $markup .= '<div class="modal-body ore-body">'.$val['markup'].'</div>';

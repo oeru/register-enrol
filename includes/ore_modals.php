@@ -95,8 +95,7 @@ static $modals = array(
     ),
     'edit_profile' => array(
         'title' => 'Edit your profile',
-        'markup' => '<p>Edit your user profile details</p>'.
-        	'<div class="form-group">'.
+        'markup' => '<div class="form-group">'.
                 '<label for="firstname">First Name</label>'.
                 '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName">'.
                 '<span id="helpFirstName" class="help-block">Your first or given name(s) as you would like it(them) displayed.</span>'.
@@ -107,7 +106,7 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="username">Username</label>'.
                 '<input type="text" class="form-control" id="username" placeholder="username" aria-describedby="helpUsername">'.
-                '<span id="helpUsername" class="help-block">Your preferred username. Allowed letters: a-z, 0-9, _, and -. No spaces or special characters.</span>'.
+                '<span id="helpUsername" class="help-block">Your preferred username. Allowed letters: a-z0-9_-. Spaces and other special characters not allowed.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="display-name">Display Name</label>'.

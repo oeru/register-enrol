@@ -9,7 +9,18 @@ article.ore-form .container .entry-content > p,
 article.ore-form .container .entry-content > div.ore {
     padding: 0 28px 0 28px;
 }
-
+#ore-container {
+    font-family: 'Open Sans', sans-serif;
+}
+/*#ore-container .ore-modal.fade { opacity: 1.0; }*/
+#ore-container .ore-modal {
+    overflow-x: hidden;
+    overflow-y: auto;
+    opacity: 1;
+    z-index: 1050;
+    display: block;
+    font-family: 'Open Sans', sans-serif;
+}
 /* buttons */
 .ore-menu p .ore-button { margin-bottom: 0; }
 #ore-container .ore-left {
@@ -24,7 +35,7 @@ article.ore-form .container .entry-content > div.ore {
     line-height: normal;
 }
 #ore-container .ore-button {
-    padding: 6px 8px;
+    padding: 12px 12px;
     color: #333 !important;
     background-color: #97BB6D;
     border-radius: 5px;
@@ -35,6 +46,10 @@ article.ore-form .container .entry-content > div.ore {
 #ore-container .ore-button:hover {
     color: #000;
     box-shadow: 4px 4px 10px #999;
+    text-decoration: none;
+}
+#ore-container .ore-trigger:hover {
+    color: #000;
     text-decoration: none;
 }
 #ore-container .ore-button:active {
@@ -60,7 +75,6 @@ article.ore-form .container .entry-content > div.ore {
     border-radius: 10px 0 10px 10px;
     z-index: 10000;
 }
-
 .ore-menu p {
     color: #000;
     word-wrap: normal;
@@ -71,10 +85,8 @@ article.ore-form .container .entry-content > div.ore {
     margin-bottom: 0;
     padding-bottom: 0;
 }
-
 .ore-trigger {
 }
-
 /*a.ore-close.ui-btn-left {
     left: 0;
     top: 0;
@@ -91,14 +103,49 @@ article.ore-form .container .entry-content > div.ore {
 #ore-container .modal-dialog {
     margin: 30px auto;
 }
+#ore-container .modal-dialog button.close {
+    margin-top: -2px;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    float: right;
+    font-size: 21px;
+    font-weight: bold;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: 0.2;
+}
 #ore-container .modal-content {
     position: relative;
     background-color: #fefefe;
     border: 1px solid #F7BD27;
     border-radius: 10px;
-    margin-top: 20px;
+    /*margin-top: 20px;*/
+    margin-top: 240px;
     padding: 0 20px;
     box-shadow: 0 5px 15px rgb(0,0,0,0.5);
+}
+#ore-container .ore-modal {
+    overflow-x: hidden;
+    overflow-y: auto;
+    opacity: 1;
+    position: fixed;
+    top: 20px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    line-height: 1em;
+    font-size: 14px;
+}
+#ore-container .ore-modal.modal .modal-dialog {
+    /*opacity: 1;*/
+    background-color: inherit;
+}
+#ore-container .ore-modal.modal .modal-dialog .modal-content {
+    /*opacity: 1.0;*/
+    background-color: #fefefe;
 }
 #ore-container .ore-modal.modal h1 {
     color: #000;
