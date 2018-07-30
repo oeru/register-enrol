@@ -38,6 +38,7 @@ article.ore-form .container .entry-content > div.ore {
 }
 #ore-container .ore-button {
     padding: 12px 12px;
+    cursor: pointer;
     /* color: #333 !important;*/
     color: #ddd !important;
     background-color: #97BB6D;

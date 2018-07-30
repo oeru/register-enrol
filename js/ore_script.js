@@ -60,7 +60,7 @@ jQuery(document).ready(function() {
      */
     function authenticated_menu(data) {
         user = data.user;
-        text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p><p>You can <span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span></p>';
+        text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p><p><span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span></p>';
         LOG('new text: '+text);
         // enable menus
         prepare_menu(text);
