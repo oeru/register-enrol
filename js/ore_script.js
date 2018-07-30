@@ -86,7 +86,10 @@ jQuery(document).ready(function() {
     // set the country of the current user
     function set_country(form, country) {
         LOG('setting country to ', country);
+        //LOG('form = ', form);
+        // Todo: this doesn't work after closing the dialogue the first time, and reopening.
         form.find('#ore-country').val(country);
+        //$('#ore-container').find('#ore-country').val(country);
     }
 
     // replace user tokens
@@ -120,6 +123,7 @@ jQuery(document).ready(function() {
         var pausetime = 3000;
         var postclicktime = 500;
         var fadetime = 1000;
+        var form_parent = '#ore-login-status';
 
         LOG('prepare menu');
         $(trigger).each(function() {
@@ -163,6 +167,7 @@ jQuery(document).ready(function() {
                     LOG('this = ', $(this));
                     LOG('e = ', e);
                     if (e.target.id == 'ore-edit-profile-button') {
+                    //if (e.target.id == 'disabled') {
                         LOG('Launch Edit Profile!');
                         //window.history.pushState("object or string", "OERu Register Enrol - Edit Profile", "/register-enrol/edit-profile");
                         // tweak the text to replace relevant placeholders..
@@ -172,14 +177,24 @@ jQuery(document).ready(function() {
                         //LOG('form: ', form);
                         form = replace_user_tokens(form, ore_data.user);
                         form = add_countries(form, country_select);
-                        form = $('#ore-login-status').append(form);
+                        form = $(form_parent).append(form);
                         set_country(form, ore_data.user.country);
                     } else if (e.target.id == 'ore-login-button') {
+                    //} else if (e.target.id == 'ore-edit-profile-button') {
                         LOG('Launch Login!');
-                        window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
+                        form = ore_data.modals.login.markup;
+                        //window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
+                        form = $(form_parent).append(form);
                     } else if (e.target.id == 'ore-register-button') {
                         LOG('Launch Register!');
-                        window.history.pushState("object or string", "OERu Register Enrol - Register", "/register-enrol/register");
+                        //window.history.pushState("object or string", "OERu Register Enrol - Register", "/register-enrol/register");
+                        form = ore_data.modals.register.markup;
+                        country_select = ore_data.country_select;
+                        //form = form.replace('{country_picker}', country_select);
+                        //LOG('form: ', form);
+                        form = replace_user_tokens(form, ore_data.user);
+                        form = add_countries(form, country_select);
+                        form = $(form_parent).append(form);
                     } else {
                         LOG('click within menu isn\'t on a known button');
                         e.stopPropagation();
@@ -232,12 +247,23 @@ jQuery(document).ready(function() {
         LOG('showing modal! e ', e);
         $(this).modal('show');
     });
+
+    // closing based on either clicking a "Cancel" button, or the
+    // clock "X" on the form...
     $('#ore-container').on('click', '.ore-button', function(e) {
         LOG('click! e.target ', e.target);
         if (value_in_object(e.target.classList, 'cancel')) {
             LOG('hide the modal!');
-              //$('#ore-container .ore-modal.modal').modal('hide');
-              $('#ore-container .ore-modal.modal').hide();
+            //$('#ore-container .ore-modal.modal').modal('hide');
+            $('#ore-container .ore-modal.modal').hide();
+        }
+    });
+    $('#ore-container').on('click', '.close', function(e) {
+        LOG('click! e.target ', e.target);
+        if (value_in_object(e.target.classList, 'close')) {
+            LOG('close the modal!');
+            //$('#ore-container .ore-modal.modal').modal('hide');
+            $('#ore-container .ore-modal.modal').hide();
         }
     });
 

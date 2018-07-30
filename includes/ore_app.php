@@ -143,7 +143,7 @@ class OREMain extends OREBase {
             if (isset($val['title'])) {
                 $this->log('getting the modal: "'.$val['title'].'"');
                 $markup .= '<div class="modal-header">';
-                $markup .= '<button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">x</span></button>';
+                $markup .= '<button class="close" type="button" data-dismiss="modal" aria-label="Close"><span class="close" aria-hidden="true">x</span></button>';
                 $markup .= '<h1 class="ore-title">'.$val['title'].'</h1>';
                 $markup .= '</div><!-- modal-header -->';
             }
@@ -163,11 +163,11 @@ class OREMain extends OREBase {
                     if (isset($default['class'])) { $classes .= ' '.$default['class']; }
                     $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
                         $default['label'].'</span>';
-                    unset($default['label']);
+                    //unset($default['label']);
                     if (isset($default['detail'])) {
                         //$markup .= '<p class="ore-detail">'._e($default['detail']).'</p>';
                         $markup .= '<p class="ore-detail">'.$default['detail'].'</p>';
-                        unset($default['detail']);
+                        //unset($default['detail']);
                     }
                 }
                 $markup .= '</div><!-- ore-default-wrapper -->';
@@ -183,11 +183,11 @@ class OREMain extends OREBase {
                         if (isset($alt['class'])) { $classes .= ' '.$alt['class']; }
                         $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
                             $alt['label'].'</span>';
-                        unset($alt['label']);
+                        //unset($alt['label']);
                         if (isset($alt['detail'])) {
                             //$markup .= '<p class="ore-detail">'._e($alt['detail']).'</p>';
                             $markup .= '<p class="ore-detail">'.$alt['detail'].'</p>';
-                            unset($alt['detail']);
+                            //unset($alt['detail']);
                         }
                     }
                     $markup .= '</div><!-- ore-alt-wrapper -->';
@@ -197,7 +197,7 @@ class OREMain extends OREBase {
             }
             $markup .= '</div><!-- modal-content --></div><!-- modal-dialog --></div><!-- ore-modal -->';
             $dialogs[$index]['markup'] = $markup;
-            //$this->log('dialog['.$name.']: '.print_r($dialogs[$name], true));
+            $this->log('dialog['.$index.']: '.print_r($dialogs[$index], true));
         }
         return $dialogs;
     }

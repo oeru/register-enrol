@@ -11,6 +11,8 @@ article.ore-form .container .entry-content > div.ore {
 }
 #ore-container {
     font-family: 'Open Sans', sans-serif;
+    vertical-align: middle;
+    padding-top: 3px;
 }
 /*#ore-container .ore-modal.fade { opacity: 1.0; }*/
 #ore-container .ore-modal {
@@ -36,7 +38,8 @@ article.ore-form .container .entry-content > div.ore {
 }
 #ore-container .ore-button {
     padding: 12px 12px;
-    color: #333 !important;
+    /* color: #333 !important;*/
+    color: #ddd !important;
     background-color: #97BB6D;
     border-radius: 5px;
     box-shadow: 2px 2px 10px #AAA;
@@ -44,12 +47,13 @@ article.ore-form .container .entry-content > div.ore {
     text-decoration: none;
 }
 #ore-container .ore-button:hover {
-    color: #000;
+    /*color: #000;*/
+    color: #FFFE89;
     box-shadow: 4px 4px 10px #999;
     text-decoration: none;
 }
 #ore-container .ore-trigger:hover {
-    color: #000;
+    color: #FFFE89;
     text-decoration: none;
 }
 #ore-container .ore-button:active {
@@ -57,6 +61,10 @@ article.ore-form .container .entry-content > div.ore {
     text-decoration: none;
 }
 #ore-container .ore-button:visited { text-decoration: none; }
+/* correct padding around general anchors in modal content */
+#ore-container .modal a {
+    padding: 0;
+}
 
 /* status */
 #ore-container .ore-avatar { border-radius: 8px; }
@@ -104,10 +112,11 @@ article.ore-form .container .entry-content > div.ore {
     margin: 30px auto;
 }
 #ore-container .modal-dialog button.close {
-    margin-top: -2px;
+    margin-top: -4px -8px 0 0;
     padding: 0;
     cursor: pointer;
     background: transparent;
+    text-transform: none;
     border: 0;
     float: right;
     font-size: 21px;
@@ -115,8 +124,10 @@ article.ore-form .container .entry-content > div.ore {
     line-height: 1;
     color: #000;
     text-shadow: 0 1px 0 #fff;
-    opacity: 0.2;
+    opacity: 0.8;
 }
+#ore-container .modal-dialog span.close { opacity: 1.0; color: #555; }
+#ore-container .modal-dialog span.close:hover { color: #000; }
 #ore-container .modal-content {
     position: relative;
     background-color: #fefefe;
@@ -124,7 +135,7 @@ article.ore-form .container .entry-content > div.ore {
     border-radius: 10px;
     /*margin-top: 20px;*/
     margin-top: 240px;
-    padding: 0 20px;
+    padding: 0 6px;
     box-shadow: 0 5px 15px rgb(0,0,0,0.5);
 }
 #ore-container .ore-modal {

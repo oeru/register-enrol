@@ -62,6 +62,7 @@ define('ORE_CLASS', 'ore-form');
 // support link for users of this plugin...
 define('ORE_SUPPORT_FORUM', 'https://forums.oeru.org/t/register-enrol');
 define('ORE_SUPPORT_BLOG', 'https://course.oeru.org/support/studying-courses/register-enrol/');
+define('ORE_SUPPORT_CONTACT', 'https://oeru.org/contact-us/');
 // admin details
 /*define('ORE_ADMIN_SLUG', 'ore-settings');
 define('ORE_ADMIN_TITLE', 'Register Enrol Settings');
