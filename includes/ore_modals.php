@@ -22,7 +22,7 @@ static $modals = array(
         'token' => 'login',
         'markup' => '<div class="form-group">'.
                 '<label for="username">Username or Email</label>'.
-                '<input type="text" class="form-control" id="username" placeholder="username" aria-describedby="helpUsername">'.
+                '<input type="text" class="form-control" id="username" placeholder="username or user@email" aria-describedby="helpUsername">'.
                 '<span id="helpUsername" class="help-block">Either is acceptable, because both uniquely identify you in this system.</span>'.
             '</div>'.
             '<div class="form-group">'.
