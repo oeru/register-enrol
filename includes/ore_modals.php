@@ -28,7 +28,7 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
                 '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
-                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Did you  <a href="/register-enrol/password-reset">forget your password</a>?<br/><br/>The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!</span>'.
+                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Did you  <a href="/register-enrol/password-reset"><span id="ore-forgot-password" class="button ore-button">forget your password</span></a>?<br/><br/>The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!</span>'.
       	    '</div>',
         'default' => array(
             'label' => 'Log in',
@@ -206,7 +206,7 @@ static $modals = array(
     ),
     'enrol' => array(
         'title' => 'Enrol in this OERu Course',
-        'markup' => '<p>You can enrol in "{course_title}" ({course_code}).</p>',
+        'markup' => '<p>You can enrol in "{course_title}" ({course_tag}).</p>',
         'token' => 'enrol',
         'default' => array(
             'label' => 'Enrol',
@@ -221,7 +221,7 @@ static $modals = array(
         ),
     ),
     'successfully_enrolled' => array(
-        'title' => 'Successfully enrolled in "{course_title}" ({course_code})',
+        'title' => 'Successfully enrolled in "{course_title}" ({course_tag})',
         'token' => 'successfully-enrolled',
         'markup' => '<p>You have successfully enrolled as {display_name} ({username}).</p>',
         'default' => array(
@@ -230,7 +230,7 @@ static $modals = array(
         ),
     ),
     'failed_to_enrol' => array(
-        'title' => 'Enrollment in "{course_title}" ({course_code}) failed.',
+        'title' => 'Enrollment in "{course_title}" ({course_tag}) failed.',
         'markup' => '<p>It is not clear why your enrollment attempt failed - please <a href="ORE_CONTACT_URL">contact OERu</a> to report this problem.',
         'token' => 'failed-login',
         'default' => array(
@@ -240,7 +240,7 @@ static $modals = array(
     ),
     'leave' => array(
         'title' => 'Leave this OERu Course',
-        'markup' => '<p>You can leave this course, {course_title} without penalty. You can also rejoin in future if you like.</p>',
+        'markup' => '<p>You can leave this course, "{course_title}" without penalty. You can also rejoin in future if you like.</p>',
         'token' => 'leave',
         'default' => array(
             'label' => 'Unenrol',
@@ -249,7 +249,7 @@ static $modals = array(
         ),
     ),
     'successfully_unenrolled' => array(
-        'title' => 'Successfully unenrolled from "{course_title}" ({course_code})',
+        'title' => 'Successfully unenrolled from "{course_title}" ({course_tag})',
         'token' => 'successfully-unenrolled',
         'markup' => '<p>You have successfully removed your user, {display_name} ({username}).</p>',
         'default' => array(

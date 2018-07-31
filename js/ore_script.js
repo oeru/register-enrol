@@ -175,51 +175,9 @@ jQuery(document).ready(function() {
                     //menu = $(this).next();
                     LOG('this = ', $(this));
                     LOG('e = ', e);
-                    if (e.target.id == 'ore-edit-profile-button') {
-                        LOG('Launch Edit Profile!');
-                        //window.history.pushState("object or string", "OERu Register Enrol - Edit Profile", "/register-enrol/edit-profile");
-                        // tweak the text to replace relevant placeholders..
-                        form = ore_data.modals.edit_profile.markup;
-                        country_select = ore_data.country_select;
-                        //form = form.replace('{country_picker}', country_select);
-                        //LOG('form: ', form);
-                        form = replace_user_tokens(form, ore_data.user);
-                        form = add_countries(form, country_select);
-                        form = $(form_parent).append(form);
-                        set_country(form, ore_data.user.country);
-                    } else if (e.target.id == 'ore-register-button') {
-                        LOG('Launch Register!');
-                        //window.history.pushState("object or string", "OERu Register Enrol - Register", "/register-enrol/register");
-                        form = ore_data.modals.register.markup;
-                        country_select = ore_data.country_select;
-                        //form = form.replace('{country_picker}', country_select);
-                        //LOG('form: ', form);
-                        form = replace_user_tokens(form, ore_data.user);
-                        form = add_countries(form, country_select);
-                        form = $(form_parent).append(form);
-                    } else if (e.target.id == 'ore-login-button') {
-                    //} else if (e.target.id == 'ore-edit-profile-button') {
-                        LOG('Launch Login!');
-                        form = ore_data.modals.login.markup;
-                        //window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
-                        form = $(form_parent).append(form);
-                    } else if (e.target.id == 'ore-enrol-button') {
-                        LOG('Launch Enrol!');
-                        form = ore_data.modals.enrol.markup;
-                        form = replace_user_tokens(form, ore_data.user);
-                        //window.history.pushState("object or string", "OERu Register Enrol - Enrol", "/register-enrol/enrol");
-                        form = $(form_parent).append(form);
-                    } else if (e.target.id == 'ore-leave-button') {
-                        LOG('Launch Leave!');
-                        form = ore_data.modals.leave.markup;
-                        form = replace_user_tokens(form, ore_data.user);
-                        //window.history.pushState("object or string", "OERu Register Enrol - Unenrol", "/register-enrol/unenrol");
-                        form = $(form_parent).append(form);
-                    } else {
-                        LOG('click within menu isn\'t on a known button');
+                    if (!show_modal(e.target.id, ore_data, form_parent)) {
                         e.stopPropagation();
                     }
-
                 });
                 // don't send this click to the "hide menu" function below.
                 e.stopPropagation();
@@ -267,7 +225,6 @@ jQuery(document).ready(function() {
         LOG('showing modal! e ', e);
         $(this).modal('show');
     });
-
     // closing based on either clicking a "Cancel" button, or the
     // clock "X" on the form...
     $('#ore-container').on('click', '.ore-button', function(e) {
@@ -287,6 +244,53 @@ jQuery(document).ready(function() {
         }
     });
 
+    function show_modal(target, data, form_parent) {
+        modals = data.modals;
+        user = data.user;
+        country_select = data.country_select;
+        if (target == 'ore-edit-profile-button') {
+            LOG('Launch Edit Profile!');
+            //window.history.pushState("object or string", "OERu Register Enrol - Edit Profile", "/register-enrol/edit-profile");
+            // tweak the text to replace relevant placeholders..
+            form = modals.edit_profile.markup;
+            //form = form.replace('{country_picker}', country_select);
+            //LOG('form: ', form);
+            form = replace_user_tokens(form, user);
+            form = add_countries(form, country_select);
+            form = $(form_parent).append(form);
+            set_country(form, user.country);
+        } else if (target == 'ore-register-button') {
+            LOG('Launch Register!');
+            //window.history.pushState("object or string", "OERu Register Enrol - Register", "/register-enrol/register");
+            form = modals.register.markup;
+            //form = form.replace('{country_picker}', country_select);
+            //LOG('form: ', form);
+            //form = replace_user_tokens(form, user);
+            form = add_countries(form, country_select);
+            form = $(form_parent).append(form);
+        } else if (target == 'ore-login-button') {
+            LOG('Launch Login!');
+            form = modals.login.markup;
+            //window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
+            form = $(form_parent).append(form);
+        } else if (target == 'ore-enrol-button') {
+            LOG('Launch Enrol!');
+            form = modals.enrol.markup;
+            form = replace_user_tokens(form, user);
+            //window.history.pushState("object or string", "OERu Register Enrol - Enrol", "/register-enrol/enrol");
+            form = $(form_parent).append(form);
+        } else if (target == 'ore-leave-button') {
+            LOG('Launch Leave!');
+            form = modals.leave.markup;
+            form = replace_user_tokens(form, user);
+            //window.history.pushState("object or string", "OERu Register Enrol - Unenrol", "/register-enrol/unenrol");
+            form = $(form_parent).append(form);
+        } else {
+            LOG('click within menu isn\'t on a known button');
+            return false;
+        }
+        return true;
+    }
     /*
     * End Modal dialogue stuff
     */
