@@ -30,7 +30,7 @@ class OREMain extends OREBase {
         wp_localize_script(ORE_SCRIPT, 'ore_data', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_submit' => wp_create_nonce('ore-submit-nonce'),
-            'user' => $this->get_user(),
+            'user' => $user_array,
             'modals' => $this->get_modals(),
             'country_select' => $this->get_country_selector($user_country)
         ));
@@ -93,10 +93,38 @@ class OREMain extends OREBase {
         $user['avatar_url'] = explode('?', get_avatar_url($user_id,
                 array('default'=>'identicon', 'processed_args'=>$avatar_args)))[0];
         $this->log('avatar_args... '.print_r($avatar_args, true));
-        $user['current_context'] = null;
+        // sort out the course context
+        $user['course'] = null;
+        //$site = get_current_site();
+        $site_id = get_current_blog_id();
+        $site = get_site($site_id);
+        $this->log('got site: '.print_r($site, true));
+        // if this is greater than 1, it's not the default site, meaning it's a course site.
+        if ($site_id > 1) {
+            $details = get_blog_details($site_id);
+            //$site = get_site($site_id);
+            $tag = $this->get_site_tag($site);
+            $enrolled = is_user_member_of_blog($current->ID, $site_id);
+            $course = array(
+                'course_id' => $course_id,
+                'course_tag' => $tag,
+                'enrolled' => $enrolled,
+                'course_title' => $details->blogname,
+                'course_url' => $details->siteurl,
+                'course_path' => $details->pathinfo,
+                'course_domain' => $details->domain,
+            );
+            $this->log('course object: '.print_r($course, true));
+            $user['course'] = $course;
+        }
         // replace default user object
         //$this->data = $user;
         return $user;
+    }
+
+    // given a site object, return the site's name
+    public function get_site_tag($site) {
+        return strtolower(substr($site->path,1,-1));
     }
 
     // http://2.gravatar.com/avatar/88814fd4a3a14b6a85b56980744c87fd?s=26&r=g
@@ -141,9 +169,9 @@ class OREMain extends OREBase {
             $markup = '<div id="ore-modal-'.$val['token'].'" class="ore-modal modal fade">';
             $markup .= '<div class="modal-dialog"><div class="modal-content">';
             if (isset($val['title'])) {
-                $this->log('getting the modal: "'.$val['title'].'"');
+                //$this->log('getting the modal: "'.$val['title'].'"');
                 $markup .= '<div class="modal-header">';
-                $markup .= '<button class="close" type="button" data-dismiss="modal" aria-label="Close"><span class="close" aria-hidden="true">x</span></button>';
+                $markup .= '<button class="close" type="button" data-dismiss="modal" aria-label="Close"><span class="close" aria-hidden="true" title="This will close this window, and any changes will be lost...">x</span></button>';
                 $markup .= '<h1 class="ore-title">'.$val['title'].'</h1>';
                 $markup .= '</div><!-- modal-header -->';
             }
@@ -197,7 +225,7 @@ class OREMain extends OREBase {
             }
             $markup .= '</div><!-- modal-content --></div><!-- modal-dialog --></div><!-- ore-modal -->';
             $dialogs[$index]['markup'] = $markup;
-            $this->log('dialog['.$index.']: '.print_r($dialogs[$index], true));
+            //$this->log('dialog['.$index.']: '.print_r($dialogs[$index], true));
         }
         return $dialogs;
     }

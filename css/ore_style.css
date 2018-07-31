@@ -28,19 +28,22 @@ article.ore-form .container .entry-content > div.ore {
 #ore-container .ore-left {
     float: left;
     width: 50%;
+    padding-right: 5px;
 }
 #ore-container .ore-right {
     float: right;
     width: 50%;
+    padding-left: 5px;
 }
 #ore-container p {
     line-height: normal;
 }
 #ore-container .ore-button {
-    padding: 12px 12px;
+    padding: 8px 12px;
     cursor: pointer;
     /* color: #333 !important;*/
     color: #ddd !important;
+    line-height: normal;
     background-color: #97BB6D;
     border-radius: 5px;
     box-shadow: 2px 2px 10px #AAA;
@@ -63,12 +66,15 @@ article.ore-form .container .entry-content > div.ore {
 }
 #ore-container .ore-button:visited { text-decoration: none; }
 /* correct padding around general anchors in modal content */
-#ore-container .modal a {
-    padding: 0;
-}
+#ore-container .modal a { padding: 0; }
 
 /* status */
-#ore-container .ore-avatar { border-radius: 8px; }
+#ore-container .ore-avatar {
+    border-radius: 8px;
+    margin-right: 4px;
+}
+#ore-container .ore-course-status { margin-left: 8px; }
+#ore-container .ore-course-status-indicator { margin-left: 4px; }
 
 /* menus and popups */
 .ore-menu {
@@ -94,23 +100,38 @@ article.ore-form .container .entry-content > div.ore {
     margin-bottom: 0;
     padding-bottom: 0;
 }
+#ore-container .ore-button {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
 .ore-trigger {
 }
-/*a.ore-close.ui-btn-left {
+
+#ore-container .ore-enrolled, #ore-container .ore-unenrolled {
     left: 0;
     top: 0;
     display: inline-block;
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
-    background-image: url(img/close.16x16.png);
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
     background-repeat: no-repeat;
-    opacity: 0.5;
-}*/
+    opacity: 1.0;
+}
+#ore-container .ore-enrolled {
+    background-image: url(img/enrolled.20x20.png);
+}
+#ore-container .ore-unenrolled {
+    background-image: url(img/unenrolled.20x20.png);
+}
 
 /* modal styles */
-#ore-container .modal-dialog {
-    margin: 30px auto;
+#ore-container .modal-dialog { margin: 30px auto; }
+#ore-container .modal-body p { padding: 0 inherit; }
+#ore-container p {
+    /*white-space: nowrap;*/
+    margin-top: 6px;
+    word-wrap: unset;
+    word-break: unset;
 }
 #ore-container .modal-dialog button.close {
     margin-top: -4px -8px 0 0;
@@ -164,10 +185,8 @@ article.ore-form .container .entry-content > div.ore {
     font-size: 20px;
     margin: 20px 0 0 0;
 }
-#ore-container .ore-modal.modal p {
-    color: #000;
-    padding: 0px 20px;
-}
+#ore-container .ore-modal-block p { padding: 0px 20px; }
+#ore-container .ore-modal.modal p { color: #000; }
 #ore-container .ore-modal.modal .modal-footer { text-align: center; }
 #ore-container .ore-modal p.ore-detail {
     word-break: normal;

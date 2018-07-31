@@ -116,6 +116,7 @@ static $modals = array(
         'default' => array(
             'label' => 'Register',
             'class' => 'submit',
+            'detail' => 'Register a new user account with the details entered above.',
             'success' => 'successful_registration',
             'failed' => 'failed_registration',
         ),

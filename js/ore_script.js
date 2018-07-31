@@ -39,6 +39,17 @@ jQuery(document).ready(function() {
                 var avatar = $('<img>').attr({src: user.avatar_url + '?s=26&r=g', class: 'ore-avatar'});
                 $('#ore-icon').replaceWith(avatar);
             }
+            if (user.hasOwnProperty('course') && user.course != null) {
+                if (user.course.enrolled) {
+                    msg = 'Enrolled';
+                    msg += '<span class="ore-enrolled ore-course-status-indicator">&nbsp;</span>';
+                } else {
+                    msg = 'Not enrolled';
+                    msg += '<span class="ore-unenrolled ore-course-status-indicator">&nbsp;</span>';
+                }
+                //msg += ' in '+user.course.course_tag;
+                $('#ore-login-modal').append('&nbsp;&raquo;&nbsp;<span id="ore-course-info" class="course-info">'+msg+'</span>');
+            }
             return true;
         } else {
             LOG('user not logged in');
@@ -60,7 +71,25 @@ jQuery(document).ready(function() {
      */
     function authenticated_menu(data) {
         user = data.user;
-        text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p><p><span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span></p>';
+        text = '';
+        login_text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p>';
+        if (user.hasOwnProperty('course') && user.course != null) {
+            if (user.course.enrolled) {
+                cat = 'leave';
+                label = 'Leave '+user.course.course_tag;
+                course_text = '<p>You are <strong>enrolled</strong> in "'+user.course.course_title+'" ('+user.course.course_tag+')</p>';
+            } else {
+                cat = 'enrol';
+                label = 'Enrol in '+user.course.course_tag;
+                course_text = '<p>You are <strong>not enrolled</strong> in "'+user.course.course_title+'" ('+user.course.course_tag+')</p>';
+            }
+            // login status info
+            text += '<div class="ore-menu-block ore-left">'+login_text+'<span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span></div>';
+            // course enrollment status
+            text += '<div class="ore-menu-block ore-right">'+course_text+'<span id="ore-'+cat+'-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">'+label+'</span></div>';
+        } else {
+            text += '<div class="ore-menu-block">'+login_text+'<span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span></div>';
+        }
         LOG('new text: '+text);
         // enable menus
         prepare_menu(text);
@@ -95,7 +124,12 @@ jQuery(document).ready(function() {
     // replace user tokens
     function replace_user_tokens(string, user) {
         for (var key in user) {
-            LOG('key: '+key+' val: '+user[key]);
+            //LOG('key: '+key+' val: '+user[key]);
+            if (key === 'course') {
+                for (var course_key in user['course']) {
+                    string = string.replace('{'+course_key+'}', user['course'][course_key]);
+                }
+            }
             string = string.replace('{'+key+'}', user[key]);
         }
         return string;
@@ -111,11 +145,6 @@ jQuery(document).ready(function() {
             }
         })
         return match;
-    }
-
-    // hide all modals...
-    function hide_modasls() {
-
     }
 
     function prepare_menu(text) {
@@ -134,30 +163,10 @@ jQuery(document).ready(function() {
             $(this).removeAttr('title');
             // manage clicks, e.g. from touch devices
             $(trigger).click( function(e) {
-
                 create_menu($(this), text);
                 enable_menu();
-                // after a pausetime pause, then fade out over fadetime second,
-                // unless a mouse is hovering
-                /*$(.ore-button).click(function() {
-                    LOG('button clicked!');
-                });*/
-
                 LOG('click');
                 set_menu_fade();
-                // .next() means the menu popup node
-                // this might be breaking the hiding of modal dialogues when you next open the menu
-                // so leave commented out unless testing!!
-                /*$(this).next().hover( function() {
-                        $(this).next().animate({opacity: 1.0}, {duration: 0, complete: function() {
-                            // fade it back to full
-                            LOG('we got moving');
-                            $(this).fadeIn();
-                            // reset the clock
-                            set_menu_fade();
-                        }
-                    });
-                });*/
                 // if the user clicks within the box, fade shortly thereafter
                 //
                 // Process Menu Click Events
@@ -167,7 +176,6 @@ jQuery(document).ready(function() {
                     LOG('this = ', $(this));
                     LOG('e = ', e);
                     if (e.target.id == 'ore-edit-profile-button') {
-                    //if (e.target.id == 'disabled') {
                         LOG('Launch Edit Profile!');
                         //window.history.pushState("object or string", "OERu Register Enrol - Edit Profile", "/register-enrol/edit-profile");
                         // tweak the text to replace relevant placeholders..
@@ -179,12 +187,6 @@ jQuery(document).ready(function() {
                         form = add_countries(form, country_select);
                         form = $(form_parent).append(form);
                         set_country(form, ore_data.user.country);
-                    } else if (e.target.id == 'ore-login-button') {
-                    //} else if (e.target.id == 'ore-edit-profile-button') {
-                        LOG('Launch Login!');
-                        form = ore_data.modals.login.markup;
-                        //window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
-                        form = $(form_parent).append(form);
                     } else if (e.target.id == 'ore-register-button') {
                         LOG('Launch Register!');
                         //window.history.pushState("object or string", "OERu Register Enrol - Register", "/register-enrol/register");
@@ -194,6 +196,24 @@ jQuery(document).ready(function() {
                         //LOG('form: ', form);
                         form = replace_user_tokens(form, ore_data.user);
                         form = add_countries(form, country_select);
+                        form = $(form_parent).append(form);
+                    } else if (e.target.id == 'ore-login-button') {
+                    //} else if (e.target.id == 'ore-edit-profile-button') {
+                        LOG('Launch Login!');
+                        form = ore_data.modals.login.markup;
+                        //window.history.pushState("object or string", "OERu Register Enrol - Login", "/register-enrol/login");
+                        form = $(form_parent).append(form);
+                    } else if (e.target.id == 'ore-enrol-button') {
+                        LOG('Launch Enrol!');
+                        form = ore_data.modals.enrol.markup;
+                        form = replace_user_tokens(form, ore_data.user);
+                        //window.history.pushState("object or string", "OERu Register Enrol - Enrol", "/register-enrol/enrol");
+                        form = $(form_parent).append(form);
+                    } else if (e.target.id == 'ore-leave-button') {
+                        LOG('Launch Leave!');
+                        form = ore_data.modals.leave.markup;
+                        form = replace_user_tokens(form, ore_data.user);
+                        //window.history.pushState("object or string", "OERu Register Enrol - Unenrol", "/register-enrol/unenrol");
                         form = $(form_parent).append(form);
                     } else {
                         LOG('click within menu isn\'t on a known button');
