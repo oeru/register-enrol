@@ -5,11 +5,11 @@
 
 abstract class OREBase {
 
-/*    // construct JSON responses to AJAX queries
+    // construct JSON responses to AJAX queries
     public function ajax_response($a) {
         echo json_encode($a);
         die();
-    } */
+    }
 
     // Debugging related //////////////////////////
     //

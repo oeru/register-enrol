@@ -42,7 +42,7 @@ class OREMain extends OREBase {
         // this allows users who aren't authenticated to use the feedfinder
         add_action('wp_ajax_nopriv_ore_submit', array($this, 'ajax_submit'));
         // add the shortcode
-        add_shortcode(ORE_ID, 'OREMain::shortcode');
+        //add_shortcode(ORE_ID, 'OREMain::shortcode');
         // allows us to add a class to our post
         add_filter('body_class', array($this, 'add_post_class'));
         add_filter('post_class', array($this, 'add_post_class'));
@@ -53,7 +53,7 @@ class OREMain extends OREBase {
 
     // the function called after the ore-submit button is clicked in our form
     public function ajax_submit() {
-       $this->log('in ajax_submit: '.print_r($_POST, true));
+       //$this->log('in ajax_submit: '.print_r($_POST, true));
        // check if the submitted nonce matches the generated nonce created in the auth_init functionality
        if ( ! wp_verify_nonce(sanitize_text_field($_POST['nonce_submit']), 'ore-submit-nonce') ) {
            die ("Busted - someone's trying something funny in submit!");
@@ -66,6 +66,58 @@ class OREMain extends OREBase {
        $this->ajax_response(array('success' => $this->process()));
        $this->log('ajax_submit done, dying...');
        wp_die();
+    }
+
+    public function process() {
+        $this->log('in process: '.print_r($_POST, true));
+        $form_action = $_POST['form_action'];
+        switch ($form_action) {
+            case 'login':
+                $this->log('login');
+                $user_data = array(
+                    'user_login' => sanitize_text_field($_POST['credential']),
+                    'user_password' => $_POST['password'],
+                    'remember' => true
+                );
+                $login = wp_signon($user_data, false);
+                $this->log('login: '.print_r($login, true));
+                // if login fails
+                if (is_wp_error($login)) {
+                    $this->ajax_response(array(
+                        'loggedin' => false,
+                        'result' => $login->get_error_message()
+                    ));
+                } else { // or succeeds
+                    $this->ajax_response(array(
+                        'loggedin' => true,
+                        'result' => 'login successful'
+                    ));
+                    // Todo - record this with the activity register!
+                }
+                break;
+            case 'password_reset':
+                $this->log('password_reset');
+                break;
+            case 'register':
+                $this->log('register');
+                break;
+            case 'edit_profile':
+                $this->log('edit_profile');
+                break;
+            case 'session_expired':
+                $this->log('session_expired');
+                break;
+            case 'enrol':
+                $this->log('enrol');
+                break;
+            case 'leave':
+                $this->log('leave');
+                break;
+            default:
+                $this->log('default action');
+                break;
+        }
+        return true;
     }
 
     public function get_user($user_id = null) {
@@ -92,6 +144,7 @@ class OREMain extends OREBase {
         $user['profile_url'] = $this->get_profile_url($user_id);
         $user['avatar_url'] = explode('?', get_avatar_url($user_id,
                 array('default'=>'identicon', 'processed_args'=>$avatar_args)))[0];
+        $user['log_out_url'] = wp_logout_url(get_permalink());
         $this->log('avatar_args... '.print_r($avatar_args, true));
         // sort out the course context
         $user['course'] = null;
@@ -106,7 +159,7 @@ class OREMain extends OREBase {
             $tag = $this->get_site_tag($site);
             $enrolled = is_user_member_of_blog($current->ID, $site_id);
             $course = array(
-                'course_id' => $course_id,
+                'course_id' => $site_id,
                 'course_tag' => $tag,
                 'enrolled' => $enrolled,
                 'course_title' => $details->blogname,
@@ -128,12 +181,6 @@ class OREMain extends OREBase {
     }
 
     // http://2.gravatar.com/avatar/88814fd4a3a14b6a85b56980744c87fd?s=26&r=g
-    /*// get the user's first_name
-    public function get_first_name($id) { return $this->get_meta($id, 'first_name'); }
-    public function set_first_name($id, $val) { return $this->set_meta($id, 'first_name', $val); }
-    // get the user's last_name
-    public function get_last_name($id) { return $this->get_meta($id, 'last_name'); }
-    public function set_last_name($id, $val) { return $this->set_meta($id, 'last_name', $val); } */
     // get the user's country
     public function get_country($id) { return $this->get_meta($id, 'usercountry'); }
     public function set_country($id, $val) { return $this->set_meta($id, 'usercountry', $val); }
@@ -176,12 +223,12 @@ class OREMain extends OREBase {
                 $markup .= '</div><!-- modal-header -->';
             }
             if (isset($val['markup'])) {
-                $markup .= '<div class="modal-body ore-body">'.$val['markup'].'</div>';
+                $markup .= '<div class="ore-form modal-body ore-body">'.$val['markup'].'</div>';
             }
             $button_classes = 'button ore-button';
             $both = (is_array($val['default']) && is_array($val['alternative'])) ? true : false;
             if (is_array($val['default'])) {
-                $id = 'ore-'.$val['token'].'-default-button';
+                $id = 'ore-'.$val['token'].'-default-action';
                 $classes = $button_classes.' ore-default';
                 $div_classes = ($both) ? ' ore-left' : '';
                 $name = 'ore-default-'.$val['token'];
@@ -201,7 +248,7 @@ class OREMain extends OREBase {
                 $markup .= '</div><!-- ore-default-wrapper -->';
                 $dialogs[$index]['default'] = $default;
                 if (is_array($val['alternative'])) {
-                    $id = 'ore-'.$val['token'].'-alternative-button';
+                    $id = 'ore-'.$val['token'].'-alternative-action';
                     $classes = $button_classes.' ore-alternative';
                     $div_classes = ($both) ? ' ore-right' : '';
                     $name = 'ore-alternatve-'.$val['token'];
@@ -333,7 +380,7 @@ class OREMain extends OREBase {
         global $countries;
         $this->log('country for user: '.$user_country);
         $user_country = "";
-        $selector = '<select id="ore-country" name="country" class="form-control">';
+        $selector = '<select id="ore-country" name="country" class="ore-country form-control">';
         $selector .= '<option value=""></option>';
         foreach($countries as $abbr => $country) {
             $selected = "";

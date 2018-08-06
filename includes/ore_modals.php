@@ -21,14 +21,14 @@ static $modals = array(
         'title' => 'Log in to OERu Course site',
         'token' => 'login',
         'markup' => '<div class="form-group">'.
-                '<label for="username">Username or Email</label>'.
-                '<input type="text" class="form-control" id="username" placeholder="username or user@email" aria-describedby="helpUsername">'.
-                '<span id="helpUsername" class="help-block">Either is acceptable, because both uniquely identify you in this system.</span>'.
+                '<label for="credential">Username or Email</label>'.
+                '<input type="text" class="form-control" id="credential" placeholder="username or user@email" aria-describedby="helpCredential">'.
+                '<span id="helpCredential" class="help-block">Either is acceptable, because both uniquely identify you in this system.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
                 '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
-                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Did you  <a href="/register-enrol/password-reset"><span id="ore-forgot-password" class="button ore-button">forget your password</span></a>?<br/><br/>The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!</span>'.
+                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Problems? You can do a <a href="/register-enrol/password-reset"><span id="ore-password-reset" class="button ore-button">Password Reset</span></a><br/><br/>The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!</span>'.
       	    '</div>',
         'default' => array(
             'label' => 'Log in',
@@ -73,7 +73,39 @@ static $modals = array(
         'default' => array(
             'label' => 'Reset Password',
             'class' => 'submit',
-            'detail' => 'A link will be sent to your registered email address. Check your spam folder if it doesn\'t appear within a few minutes'
+            'detail' => 'A link will be sent to your registered email address. Check your spam folder if it doesn\'t appear within a few minutes',
+            'success' => 'successful_reset',
+            'failure' => 'failed_reset'
+        ),
+    ),
+    'successful_reset' => array(
+        'title' => 'Password Reset Email Sent',
+        'token' => 'successful-reset',
+        'markup' => '<p>We have sent an email with a password reset link in it, so check your email.</p>'.
+            '<p>Clicking that  link will allow you to set a new password</p>'.
+            '<p>If you haven\'t received an email from us in 10-15 minutes, check your spam folder, but it could take as long as 30 minutes to get to you. If you don\'t get it at all, you can <a href="https://oeru.org/contact-us">contact us</a> for assistance.</p>'.
+            '<p class="note">It might surprise you to know that we do not store your password in our systems - we do that for security purposes).</p>',
+        'default' => array(
+            'label' => 'Ok',
+            'class' => 'submit',
+        ),
+    ),
+    'failed_reset' => array(
+        'title' => 'Password Reset Failed',
+        'token' => 'failed-reset',
+        'markup' => '<p>We were not able to find a user with the details you have entered in our system.</p>'.
+            '<p>Please check that you have typed in your chosen identifier - your username or email - correctly.</p>'.
+            '<p>If it\'s possible you haven\'t previously registered an account with us, you can do that now.</p>',
+        'default' => array(
+            'label' => 'Try again',
+            'class' => 'submit',
+            'success' => 'reset_password',
+        ),
+        'alternative' => array(
+            'label' => 'I need to register',
+            'class' => 'submit',
+            'detail' => 'If you haven\'t previously registered an account, you need to do that first.',
+            'destination' => 'register',
         ),
     ),
     'register' => array(
@@ -81,10 +113,10 @@ static $modals = array(
         'token' => 'register',
         'markup' => '<div class="form-group">'.
                 '<label for="firstname">First Name</label>'.
-                '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName" value={first_name}>'.
+                '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName">'.
                 '<span id="helpFirstName" class="help-block">Your first or given name(s) as you would like it(them) displayed.</span>'.
                 '<label for="lastname">Last Name</label>'.
-                '<input type="text" class="form-control" id="last-name" placeholder="your last name" aria-describedby="helpLastName" value={last_name}>'.
+                '<input type="text" class="form-control" id="last-name" placeholder="your last name" aria-describedby="helpLastName">'.
                 '<span id="helpLastName" class="help-block">Your last or family name(s) as you would like it(them) displayed.</span>'.
             '</div>'.
             '<div class="form-group">'.
@@ -106,7 +138,7 @@ static $modals = array(
           	'</div>'.
       		'<div class="form-group">'.
             	'<label for="email">Email</label>'.
-                '<input type="text" class="form-control" id="email" placeholder="me@example.com" value="{email}">'.
+                '<input type="text" class="form-control" id="email" placeholder="me@example.com">'.
           	'</div>'.
         	'<div class="form-group">'.
                 '<label for="usercountry">Country of origin</label>'.
