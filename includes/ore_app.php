@@ -22,9 +22,14 @@ class OREMain extends OREBase {
         $this->log('in init');
 
         $this->log('setting up scripts');
-        // add the ajax handlers
+        // jsquery validate script
+        wp_register_script(
+            'jquery-validate',
+            'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/jquery.validate.js',
+            array('jquery'), true
+        );
         wp_enqueue_script(ORE_SCRIPT, ORE_URL.'js/ore_script.js', array(
-            'jquery', 'jquery-form'));
+            'jquery', 'jquery-form', 'jquery-validate'));
         $user_array = $this->get_user();
         $user_country = (isset($user_array['country'])) ? $user_array['country'] : "";
         wp_localize_script(ORE_SCRIPT, 'ore_data', array(
@@ -37,12 +42,11 @@ class OREMain extends OREBase {
         // our css
         wp_register_style(ORE_STYLE, ORE_URL.'css/ore_style.css');
         wp_enqueue_style(ORE_STYLE);
-        // this enables the feedfinder service for authenticated users...
+        // add the ajax handlers
+        // this enables the register-enrol service for authenticated users...
         add_action('wp_ajax_ore_submit', array($this, 'ajax_submit'));
-        // this allows users who aren't authenticated to use the feedfinder
+        // and, just as importantly, unauthenticated users...
         add_action('wp_ajax_nopriv_ore_submit', array($this, 'ajax_submit'));
-        // add the shortcode
-        //add_shortcode(ORE_ID, 'OREMain::shortcode');
         // allows us to add a class to our post
         add_filter('body_class', array($this, 'add_post_class'));
         add_filter('post_class', array($this, 'add_post_class'));

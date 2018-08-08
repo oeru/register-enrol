@@ -225,6 +225,24 @@ static $modals = array(
              'detail' => 'Ignore these changes. Leave your profile unchanged.',
          ),
     ),
+    'profile_saved' => array(
+        'title' => 'Your {username} profile saved',
+        'token' => 'profile-saved',
+        'markup' => '<p>Profile for {display_name} ({username}) successfully updated.</p>',
+        'default' => array(
+            'label' => 'Ok',
+            'class' => 'submit',
+        ),
+    ),
+    'profile_save_failed' => array(
+        'title' => 'Your {username} profile was <strong>not</strong> saved',
+        'token' => 'profile-saved',
+        'markup' => '<p>Error: profile for {display_name} ({username}) not updated.</p>',
+        'default' => array(
+            'label' => 'Ok',
+            'class' => 'submit',
+        ),
+    ),
     'session_expired' => array(
         'title' => 'Session Exp',
         'markup' => '<p>Your session has timed out. To continue, you must renew your session by entering the password for user {username}.</p>'.
