@@ -28,7 +28,7 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
                 '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
-                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Problems? You can do a <span id="ore-password-reset-auxillary-button" class="button ore-button">Password Reset</span><br/><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
+                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Problems? You can do a <span id="ore-password-reset-auxillary-button" class="link ore-button">Password Reset</span><br/><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
       	    '</div>',
         'default' => array(
             'label' => 'Log in',
@@ -87,7 +87,7 @@ static $modals = array(
         'markup' => '<p>We have sent an email with a password reset link in it, so check your email.</p>'.
             '<p>Clicking that  link will allow you to set a new password</p>'.
             '<p>If you haven\'t received an email from us in 10-15 minutes, check your spam folder, but it could take as long as 30 minutes to get to you. If you don\'t get it at all, you can <a href="https://oeru.org/contact-us">contact us</a> for assistance.</p>'.
-            '<p class="note">It might surprise you to know that we do not store your password in our systems - we do that for security purposes).</p>',
+            '<p class="note">(For security reasons, we do not store your actual password in our systems)</p>',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',
@@ -245,7 +245,7 @@ static $modals = array(
         'markup' => '<div class="form-group">'.
                 '<label for="current-password">Current Password</label>'.
                 '<input type="password" class="form-control" id="current-password" aria-describedby="helpCurrentPassword">'.
-                '<span id="helpCurrentPassword" class="help-block">Your current password, so that we can ensure you\'re you!<br/>If you can\'t remember your password, you can instead do a <span id="ore-password-reset-auxillary-button" class="button ore-button">Password Reset</span><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
+                '<span id="helpCurrentPassword" class="help-block">Your current password, so that we can ensure you\'re you!<br/>If you can\'t remember your password, you can instead do a <span id="ore-password-reset-auxillary-button" class="link ore-button">Password Reset</span><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
 
           	'</div>'.
             '<div class="form-group">'.
@@ -272,7 +272,7 @@ static $modals = array(
     'password_updated' => array(
         'title' => 'Your password has been updated',
         'token' => 'password-updated',
-        'markup' => '<p>The password or for {display_name} has been updated.</p>',
+        'markup' => '<p>The password for {display_name} has been updated.</p>',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',

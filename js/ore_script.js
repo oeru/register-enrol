@@ -24,7 +24,7 @@ jQuery(document).ready(function() {
     // this is whatever modal is currently showing
     var current_modal = null;
 
-    //check_hash(current_hash);
+    check_hash(current_hash);
 
     // do something based on the has we find...
     function check_hash(hash) {
@@ -102,7 +102,7 @@ jQuery(document).ready(function() {
         user = ore_data.user;
         text = '';
         login_text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p>';
-        button_text = '<span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Profile</span>&nbsp;<span id="ore-update-password-button" class="button ore-button">Update Password</span>&nbsp;<span id="ore-log-out-button" class="button ore-button">Log Out</span>';
+        button_text = '<span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Profile</span>&nbsp;<span id="ore-update-password-button" class="button ore-button">Update Password</span>&nbsp;&nbsp;&nbsp;<span id="ore-log-out-button" class="button ore-button">Log Out</span>';
         course = false;
         if (user.hasOwnProperty('course') && user.course != null) {
             course = true;
@@ -539,7 +539,7 @@ jQuery(document).ready(function() {
                     } else if (action == 'edit_profile') {
                         LOG('Save Profile!');
                         set_hash('profile_saved');
-                    } else if (action == 'password_updated') {
+                    } else if (action == 'update_password') {
                         LOG('Password Updated!');
                         set_hash('password_updated');
                     } else if (action == 'enrol') {
@@ -561,7 +561,7 @@ jQuery(document).ready(function() {
                     } else if (action == 'password_reset') {
                         LOG('Failed to reset password');
                         set_hash('failed_reset');
-                    } else if (action == 'password_updated') {
+                    } else if (action == 'update_password') {
                         LOG('Password Not Updated!');
                         set_hash('password_update_failed');
                     } else if (action == 'edit_profile') {

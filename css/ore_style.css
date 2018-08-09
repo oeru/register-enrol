@@ -25,7 +25,7 @@ article.ore-form .container .entry-content > div.ore {
 }
 /* buttons */
 .ore-menu p .ore-button { margin-bottom: 0; }
-#ore-container .ore-menu-block, 
+#ore-container .ore-menu-block,
 #ore-container .ore-modal-block {
     float: left;
     padding-right: 5px;
@@ -43,12 +43,10 @@ article.ore-form .container .entry-content > div.ore {
 #ore-container p {
     line-height: normal;
 }
-#ore-container .ore-button {
+
+/* start buttons */
+#ore-container .button {
     padding: 8px 12px;
-    cursor: pointer;
-    /* color: #333 !important;*/
-    /*color: #ddd !important;*/
-    /*color: #ddd;*/
     line-height: normal;
     background-color: #97BB6D;
     border-radius: 5px;
@@ -56,23 +54,41 @@ article.ore-form .container .entry-content > div.ore {
     text-transform: none;
     text-decoration: none;
 }
-#ore-container .ore-button:hover {
+#ore-container .button:hover {
     /*color: #000;*/
     color: #FFFE89;
     box-shadow: 4px 4px 10px #999;
     text-decoration: none;
 }
+#ore-container .button:active {
+    box-shadow: 0px 0px 10px #999;
+    text-decoration: none;
+}
+#ore-container .button:visited { text-decoration: none; }
+/* end buttons */
+/* start links */
+#ore-container .link {
+    line-height: normal;
+    background-color: #fff;
+    font-weight: bold;
+    text-transform: none;
+    text-decoration: none;
+}
+#ore-container .link:hover { text-decoration: underline; }
+#ore-container .link:active { text-decoration: underline; }
+/* end links */
+
+/* specific to ore-button */
+#ore-container .ore-button {
+    cursor: pointer;
+}
 #ore-container .ore-trigger:hover {
     color: #FFFE89;
     text-decoration: none;
 }
-#ore-container .ore-button:active {
-    box-shadow: 0px 0px 10px #999;
-    text-decoration: none;
-}
-#ore-container .ore-button:visited { text-decoration: none; }
 /* correct padding around general anchors in modal content */
 #ore-container .modal a { padding: 0; }
+
 
 /* status */
 #ore-container .ore-avatar {
