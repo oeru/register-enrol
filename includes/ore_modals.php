@@ -28,7 +28,7 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
                 '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
-                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Problems? You can do a <a href="/register-enrol/password-reset"><span id="ore-password-reset" class="button ore-button">Password Reset</span></a><br/><br/>The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!</span>'.
+                '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Problems? You can do a <span id="ore-password-reset-auxillary-button" class="button ore-button">Password Reset</span><br/><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
       	    '</div>',
         'default' => array(
             'label' => 'Log in',
@@ -68,8 +68,11 @@ static $modals = array(
         'title' => 'Reset your password',
         'token' => 'password-reset',
         'markup' => '<p>If you have forgotten your password, you can request a reset. We will need to know the email address you used to register or your username.</p>'.
-            '<p class="email"><input id="ore-email" class="email" value="" type="email">email</input></p>'.
-            '<p class="username"><input id="ore-username" class="username" value="" type="text">username</input></p>',
+        '<div class="form-group">'.
+            '<label for="password">Enter your Username or Email to identify yourself.</label>'.
+            '<input type="text" class="form-control" id="credential" placeholder="username or user@email" value="{email}" aria-describedby="helpCredential">'.
+            '<span id="helpCredential" class="help-block">Either is acceptable, because both uniquely identify you in this system.</span>'.
+        '</div>',
         'default' => array(
             'label' => 'Reset Password',
             'class' => 'submit',
@@ -132,9 +135,10 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
                 '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
-                '<span id="helpPassword" class="help-block">At least 8 characters.</span>'.
+                '<span id="helpPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols.</span>'.
                 '<label for="confirm-password">Confirm password</label>'.
-                '<input type="password" class="form-control" id="confirm-password">'.
+                '<input type="password" class="form-control" id="confirm-password" aria-describedby="helpConfirmPassword">'.
+                '<span id="helpConfirmPassword" class="help-block">This must be identical to the Password field.'.
           	'</div>'.
       		'<div class="form-group">'.
             	'<label for="email">Email</label>'.
@@ -195,14 +199,6 @@ static $modals = array(
                 '<input type="text" class="form-control" id="display-name" placeholder="Ms Sue Smith" aria-describedby="helpDisplayName" value="{display_name}">'.
                 '<span id="helpDisplayName" class="help-block">Your publicly visible name or preferred nickname.</span>'.
           	'</div>'.
-            '<div class="form-group">'.
-                '<label for="password">Password</label>'.
-                '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
-                '<span id="helpPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols. Leave blank if you do not want to update your password!</span>'.
-                '<label for="confirm-password">Confirm password</label>'.
-                '<input type="password" class="form-control" id="confirm-password" aria-describedby="helpConfirmPassword">'.
-                '<span id="helpConfirmPassword" class="help-block">This must be identical to the Password field. Leave blank if you do not want to update your password!</span>'.
-          	'</div>'.
       		'<div class="form-group">'.
             	'<label for="email">Email</label>'.
                 '<input type="text" class="form-control" id="email" placeholder="me@example.com" value="{email}">'.
@@ -226,9 +222,9 @@ static $modals = array(
          ),
     ),
     'profile_saved' => array(
-        'title' => 'Your {username} profile saved',
+        'title' => 'Your profile (username <strong>{username}</strong>) has been saved',
         'token' => 'profile-saved',
-        'markup' => '<p>Profile for {display_name} ({username}) successfully updated.</p>',
+        'markup' => '<p>Profile for {display_name} successfully updated.</p>',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',
@@ -238,6 +234,54 @@ static $modals = array(
         'title' => 'Your {username} profile was <strong>not</strong> saved',
         'token' => 'profile-saved',
         'markup' => '<p>Error: profile for {display_name} ({username}) not updated.</p>',
+        'default' => array(
+            'label' => 'Ok',
+            'class' => 'submit',
+        ),
+    ),
+    'update_password' => array(
+        'title' => 'Update password for user <strong>{username}</strong>',
+        'token' => 'update-password',
+        'markup' => '<div class="form-group">'.
+                '<label for="current-password">Current Password</label>'.
+                '<input type="password" class="form-control" id="current-password" aria-describedby="helpCurrentPassword">'.
+                '<span id="helpCurrentPassword" class="help-block">Your current password, so that we can ensure you\'re you!<br/>If you can\'t remember your password, you can instead do a <span id="ore-password-reset-auxillary-button" class="button ore-button">Password Reset</span><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
+
+          	'</div>'.
+            '<div class="form-group">'.
+                '<label for="new-password">New Password</label>'.
+                '<input type="password" class="form-control" id="new-password" aria-describedby="helpNewPassword">'.
+                '<span id="helpNewPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols.</span>'.
+                '<label for="confirm-password">Confirm New Password</label>'.
+                '<input type="password" class="form-control" id="confirm-password" aria-describedby="helpConfirmPassword">'.
+                '<span id="helpConfirmPassword" class="help-block">This must be identical to the New Password field.'.
+          	'</div>',
+         'default' => array(
+             'label' => 'Save',
+             'class' => 'submit',
+             'detail' => 'Update your password.',
+             'success' => 'password_updated',
+             'failed' => 'password_update_failed',
+         ),
+         'alternative' => array(
+             'label' => 'Cancel',
+             'class' => 'cancel',
+             'detail' => 'Ignore this change. Leave your password unchanged.',
+         ),
+    ),
+    'password_updated' => array(
+        'title' => 'Your password has been updated',
+        'token' => 'password-updated',
+        'markup' => '<p>The password or for {display_name} has been updated.</p>',
+        'default' => array(
+            'label' => 'Ok',
+            'class' => 'submit',
+        ),
+    ),
+    'password_update_failed' => array(
+        'title' => 'Your {username} password was <strong>not</strong> updated',
+        'token' => 'profile-saved',
+        'markup' => '<p>Error: password for {display_name} ({username}) not updated.</p>',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',

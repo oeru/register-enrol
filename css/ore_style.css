@@ -25,16 +25,21 @@ article.ore-form .container .entry-content > div.ore {
 }
 /* buttons */
 .ore-menu p .ore-button { margin-bottom: 0; }
-#ore-container .ore-left {
+#ore-container .ore-menu-block, 
+#ore-container .ore-modal-block {
     float: left;
-    width: 50%;
     padding-right: 5px;
 }
+/*#ore-container .ore-right { padding-left: 5px; }
+#ore-container .ore-half { width: 50%; }
+#ore-container .ore-third { width: 33.33%; }*/
+#ore-container .ore-left { width: 50%; }
 #ore-container .ore-right {
-    float: right;
     width: 50%;
-    padding-left: 5px;
+    padding-right: 0px;
 }
+/*#ore-container .ore-third { width: 33.33%; }*/
+
 #ore-container p {
     line-height: normal;
 }

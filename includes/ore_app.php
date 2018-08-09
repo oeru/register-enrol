@@ -232,14 +232,19 @@ class OREMain extends OREBase {
             $button_classes = 'button ore-button';
             $both = (is_array($val['default']) && is_array($val['alternative'])) ? true : false;
             if (is_array($val['default'])) {
-                $id = 'ore-'.$val['token'].'-default-action';
+                $default = $val['default'];
                 $classes = $button_classes.' ore-default';
                 $div_classes = ($both) ? ' ore-left' : '';
                 $name = 'ore-default-'.$val['token'];
-                $default = $val['default'];
-                $markup .= '<div class="modal-footer"><div class="ore-default-wrapper'.$div_classes.'">';
+                $markup .= '<div class="modal-footer"><div class="ore-default-wrapper ore-modal-block'.$div_classes.'">';
                 if (isset($default['label'])) {
                     if (isset($default['class'])) { $classes .= ' '.$default['class']; }
+                    if (isset($default['destination'])) {
+                        $this->log('setting default destination to '.$default['destination']);
+                        $id = 'ore-'.$default['destination'].'-default-action';
+                    } else {
+                        $id = 'ore-'.$val['token'].'-default-action';
+                    }
                     $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
                         $default['label'].'</span>';
                     //unset($default['label']);
@@ -252,14 +257,19 @@ class OREMain extends OREBase {
                 $markup .= '</div><!-- ore-default-wrapper -->';
                 $dialogs[$index]['default'] = $default;
                 if (is_array($val['alternative'])) {
-                    $id = 'ore-'.$val['token'].'-alternative-action';
+                    $alt = $val['alternative'];
                     $classes = $button_classes.' ore-alternative';
                     $div_classes = ($both) ? ' ore-right' : '';
                     $name = 'ore-alternatve-'.$val['token'];
-                    $alt = $val['alternative'];
-                    $markup .= '<div class="ore-alternative-wrapper'.$div_classes.'">';
+                    $markup .= '<div class="ore-alternative-wrapper ore-modal-block'.$div_classes.'">';
                     if (isset($alt['label'])) {
                         if (isset($alt['class'])) { $classes .= ' '.$alt['class']; }
+                        if (isset($alt['destination'])) {
+                            $this->log('setting alternative destination to '.$alt['destination']);
+                            $id = 'ore-'.$alt['destination'].'-alternative-action';
+                        } else {
+                            $id = 'ore-'.$val['token'].'-alternative-action';
+                        }
                         $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
                             $alt['label'].'</span>';
                         //unset($alt['label']);

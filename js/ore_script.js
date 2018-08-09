@@ -21,6 +21,8 @@ jQuery(document).ready(function() {
 
     var current_uri = window.location.href;
     var current_hash = window.location.hash;
+    // this is whatever modal is currently showing
+    var current_modal = null;
 
     //check_hash(current_hash);
 
@@ -75,7 +77,6 @@ jQuery(document).ready(function() {
                     msg = 'Not enrolled';
                     msg += '<span class="ore-unenrolled ore-course-status-indicator">&nbsp;</span>';
                 }
-                //msg += ' in '+user.course.course_tag;
                 $('#ore-login-modal').append('&nbsp;&raquo;&nbsp;<span id="ore-course-info" class="course-info">'+msg+'</span>');
             }
             return true;
@@ -89,7 +90,7 @@ jQuery(document).ready(function() {
      * Menu for an unauthenticated (anonymous) user
      */
     function visitor_menu() {
-        text = '<div class="ore-left"><p>If you don\'t yet have an account, we invite you to</p><p style="text-align: center;"> <span id="ore-register-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Register</span></p></div><div class="ore-right"><p>If you have already registered, please</p><p style="text-align: center;"><span id="ore-login-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Log In</span></p></div>';
+        text = '<div class="ore-menu-block ore-left"><p>If you don\'t yet have an account, we invite you to</p><p style="text-align: center;"> <span id="ore-register-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Register</span></p></div><div class="ore-menu-block ore-right"><p>If you have already registered, please</p><p style="text-align: center;"><span id="ore-login-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Log In</span></p></div>';
         LOG('new text: '+text);
         // enable menus
         prepare_menu(text);
@@ -101,9 +102,10 @@ jQuery(document).ready(function() {
         user = ore_data.user;
         text = '';
         login_text = '<p>You are logged in as '+user.display_name+' ('+user.username+').</p>';
-        /*button_text = '<span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span>&nbsp;<a href="'+user.log_out_url+'"><span id="ore-log-out-button" class="button ore-button">Log Out</span></a>';*/
-        button_text = '<span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Your Profile</span>&nbsp;<span id="ore-log-out-button" class="button ore-button">Log Out</span>';
+        button_text = '<span id="ore-edit-profile-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">Edit Profile</span>&nbsp;<span id="ore-update-password-button" class="button ore-button">Update Password</span>&nbsp;<span id="ore-log-out-button" class="button ore-button">Log Out</span>';
+        course = false;
         if (user.hasOwnProperty('course') && user.course != null) {
+            course = true;
             if (user.course.enrolled) {
                 cat = 'leave';
                 label = 'Leave '+user.course.course_tag;
@@ -113,13 +115,16 @@ jQuery(document).ready(function() {
                 label = 'Enrol in '+user.course.course_tag;
                 course_text = '<p>You are <strong>not enrolled</strong> in "'+user.course.course_title+'" ('+user.course.course_tag+')</p>';
             }
-            // login status info
-            text += '<div class="ore-menu-block ore-left">'+login_text+button_text+'</div>';
-            // course enrollment status
-            text += '<div class="ore-menu-block ore-right">'+course_text+'<span id="ore-'+cat+'-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">'+label+'</span></div>';
-        } else {
-            text += '<div class="ore-menu-block">'+login_text+button_text+'</div>';
         }
+        // if we've got a course context, we have 3 divs, no course, only 2
+        extra_class = (course) ? 'ore-one' : 'ore-two';
+        // login status info
+        text += '<div class="ore-menu-block '+extra_class+' ore-first">'+login_text+button_text+'</div>';
+        if (course) {
+            // course enrollment status
+            text += '<div class="ore-menu-block '+extra_class+' ore-second">'+course_text+'<span id="ore-'+cat+'-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">'+label+'</span></div>';
+        }
+        //text +=  '<div class="ore-menu-block '+extra_class+' ore-right">'+logout_text+'</div>';
         LOG('new text: '+text);
         // enable menus
         prepare_menu(text);
@@ -244,6 +249,12 @@ jQuery(document).ready(function() {
             });
         }
     }
+    function close_menu() {
+        LOG('close menu');
+        $('.'+menu).each(function() {
+            $(this).hide();
+        });
+    }
 
     // process button clicks and other events
     function menu_events(target) {
@@ -327,21 +338,27 @@ jQuery(document).ready(function() {
     // closing based on either clicking a "Cancel" button, or the
     // clock "X" on the form...
     $('#ore-container').on('click', '.ore-button', function(e) {
-        LOG('click1! (button) e.target ', e.target);
-        // if "cancel" button is clicked (regardless of the words on it, which could
-        // be in a different language, so we consult the class list), close the modal
-        if (value_in_object(e.target.classList, 'cancel')) {
-            LOG('hide the modal!');
-            close_modal();
-            clear_hash();
-        //} else if (modal_events(action_from_id(e.target.id), e.target.id, ore_data)) {
-        } else if (modal_events(action_from_id(e.target.id))) {
-            LOG('modal event handled');
-            // we can hide the modal...
-            close_modal();
-            // Todo - show the appropriate response modal...
+        id = action_from_id(e.target.id);
+        if (current_modal == id) {
+            LOG('click1! (button) id '+id);
+            // if "cancel" button is clicked (regardless of the words on it, which could
+            // be in a different language, so we consult the class list), close the modal
+            if (value_in_object(e.target.classList, 'cancel')) {
+                LOG('hide the modal!');
+                close_modal();
+                clear_hash();
+            //} else if (modal_events(action_from_id(e.target.id), e.target.id, ore_data)) {
+            } else if (modal_events(id)) {
+                LOG('modal event handled');
+                // we can hide the modal...
+                close_modal();
+                // Todo - show the appropriate response modal...
+            } else {
+                LOG('unknown modal event');
+            }
         } else {
-            LOG('unknown modal event');
+            LOG('mismatched click, modal: '+current_modal+', id: '+id+' - launching a new modal instead!');
+            show_modal(id);
         }
     });
     //
@@ -361,8 +378,11 @@ jQuery(document).ready(function() {
         modals = ore_data.modals;
         user = ore_data.user;
         if (modals.hasOwnProperty(id)) {
+            // if a menu is showing, close it.
+            close_menu();
             // close any currently showing modals
-            //close_modal();
+            close_modal();
+            // clear any existing hashes
             clear_hash();
             // show a the new modal
             form = modals[id].markup;
@@ -377,7 +397,9 @@ jQuery(document).ready(function() {
             }
             LOG('appending form to parent');
             form = $(form_parent).append(form);
-            LOG('modal '+id+' should be visible...');
+            // set the "current_modal" value...
+            current_modal = id;
+            LOG('modal '+current_modal+' should be visible...');
             //set_hash(id);
             //return true;
         } else {
@@ -390,6 +412,8 @@ jQuery(document).ready(function() {
     function close_modal(hash = null) {
         LOG('closing currently open modal');
         $('#ore-container .ore-modal.modal').hide();
+        LOG('setting current_modal to null');
+        current_modal = null;
         if (hash != null) {
             clear_hash();
             set_hash(hash);
@@ -402,46 +426,68 @@ jQuery(document).ready(function() {
         var special_data = {};
         // if a clicked button is a "cancel" button (regardless of the words on it, which could
         // be in a different language, so we consult the class list), close the modal
-
-        if (action == 'register') {
-            LOG('Register!');
-            special_data = get_form_values();
-        } else if (action == 'login') {
-            LOG('Login!');
-            special_data = get_form_values();
-        } else if (action == 'edit_profile') {
-            LOG('Save Profile!');
-            special_data = get_form_values();
-            special_data['user_id'] = ore_data.user.user_id;
-        } else if (action == 'enrol') {
-            LOG('Enrol!');
-            special_data = {
-                'user_id': ore_data.user.user_id,
-                'course_id': ore_data.user.course.course_id,
-                'course_tag': ore_data.user.course.course_tag
-            };
-        } else if (action == 'leave') {
-            LOG('Leave!');
-            special_data = {
-                'user_id': ore_data.user.user_id,
-                'course_id': ore_data.user.course.course_id,
-                'course_tag': ore_data.user.course.course_tag
-            };
-        } else if (action == 'password_reset') {
-            LOG('Reset Password!');
+        if (current_modal != action) {
+            LOG('we got an action not related to the current modal');
+            LOG('Hide '+current_modal+' and show '+action);
+            show_modal(action);
         } else {
-            // unless we get to a requested action that's not catered for here,
-            // in which case, bail, and say something!
-            LOG('Not a configured button');
-            return false;
-        }
-        // process the ajax call...
-        if (ajax_submit(action, special_data)) {
-                LOG('completed ajax call for', action);
-            // check if a new hash has been specified by the submit, and act on it!
-            check_hash(window.location.hash);
-        } else {
-            LOG('failed to complete ajax call for', action);
+            if (action == 'register') {
+                LOG('Register!');
+                special_data = get_form_values();
+            } else if (action == 'login') {
+                LOG('Login!');
+                special_data = get_form_values();
+            } else if (action == 'password_reset') {
+                LOG('Reset Password!');
+                special_data = get_form_values();
+                special_data['user_id'] = ore_data.user.user_id;
+            } else if (action == 'edit_profile') {
+                LOG('Save Profile!');
+                special_data = get_form_values();
+                special_data['user_id'] = ore_data.user.user_id;
+            } else if (action == 'update_password') {
+                LOG('Update Password!');
+                special_data = get_form_values();
+                special_data['user_id'] = ore_data.user.user_id;
+            } else if (action == 'enrol') {
+                LOG('Enrol!');
+                special_data = {
+                    'user_id': ore_data.user.user_id,
+                    'course_id': ore_data.user.course.course_id,
+                    'course_tag': ore_data.user.course.course_tag
+                };
+            } else if (action == 'leave') {
+                LOG('Leave!');
+                special_data = {
+                    'user_id': ore_data.user.user_id,
+                    'course_id': ore_data.user.course.course_id,
+                    'course_tag': ore_data.user.course.course_tag
+                };
+            // informational modals, if OK is clicked, just close them
+            } else if (action == 'successful_login' ||
+                action == 'successful_reset' ||
+                action == 'successful_registration' ||
+                action == 'profile_saved' ||
+                action == 'profile_save_failed' ||
+                action == 'successfully_enrolled' ||
+                action == 'failed_to_enrol' ||
+                action == 'successfully_unenrolled') {
+                LOG('closing informational modal: '+action);
+                close_modal();
+            } else {
+                // unless we get to a requested action that's not catered for here,
+                // in which case, bail, and say something!
+                LOG('Not a configured button');
+                return false;
+            }
+            // process the ajax call...
+            if (ajax_submit(action, special_data)) {
+                    LOG('completed ajax call for', action);
+                // check if a new hash has been specified by the submit, and act on it!
+                check_hash(window.location.hash);
+            } else {
+                LOG('failed to complete ajax call for', action);
+            }
         }
         return true;
     }
@@ -487,9 +533,15 @@ jQuery(document).ready(function() {
                     } else if (action == 'login') {
                         LOG('Logged in! Reloading page');
                         reload("successful_login");
+                    } else if (action == 'password_reset') {
+                        LOG('Resetting password');
+                        set_hash("successful_reset");
                     } else if (action == 'edit_profile') {
                         LOG('Save Profile!');
                         set_hash('profile_saved');
+                    } else if (action == 'password_updated') {
+                        LOG('Password Updated!');
+                        set_hash('password_updated');
                     } else if (action == 'enrol') {
                         LOG('Successfully enrolled!');
                         set_hash('successfully_enrolled');
@@ -506,9 +558,18 @@ jQuery(document).ready(function() {
                     } else if (action == 'login') {
                         LOG('Log in failed!');
                         set_hash("failed_login");
+                    } else if (action == 'password_reset') {
+                        LOG('Failed to reset password');
+                        set_hash('failed_reset');
+                    } else if (action == 'password_updated') {
+                        LOG('Password Not Updated!');
+                        set_hash('password_update_failed');
                     } else if (action == 'edit_profile') {
                         LOG('Profile Save Failed!');
                         set_hash('profile_save_failed');
+                    } else if (action == 'password_updated') {
+                        LOG('Password Update Failed!');
+                        set_hash('password_update_failed');
                     } else if (action == 'enrol') {
                         LOG('Failed to enrol!');
                         set_hash('failed_to_enrol');
@@ -582,7 +643,7 @@ jQuery(document).ready(function() {
         c = e.which ? e.which : e.keyCode;
         LOG('input: ' + c);
         if (c == 13) {
-            $('#ore-submit').click();
+            $('#ore-default').click();
             return false;
         }
     });
