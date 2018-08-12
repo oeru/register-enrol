@@ -45,14 +45,40 @@ class OREMain extends OREBase {
         // add the ajax handlers
         // this enables the register-enrol service for authenticated users...
         add_action('wp_ajax_ore_submit', array($this, 'ajax_submit'));
+        add_action('wp_ajax_ore_emailcheck', array($this, 'ajax_email_check'));
+        add_action('wp_ajax_ore_usernamecheck', array($this, 'ajax_username_check'));
         // and, just as importantly, unauthenticated users...
         add_action('wp_ajax_nopriv_ore_submit', array($this, 'ajax_submit'));
+        add_action('wp_ajax_nopriv_ore_email_check', array($this, 'ajax_email_check'));
+        add_action('wp_ajax_nopriv_ore_username_check', array($this, 'ajax_username_check'));
         // allows us to add a class to our post
         add_filter('body_class', array($this, 'add_post_class'));
         add_filter('post_class', array($this, 'add_post_class'));
         // create a default page if it doesn't already exist...
         $this->log('create post: '.ORE_GETSTARTED_SLUG);
         $this->create_post(ORE_GETSTARTED_SLUG);
+    }
+
+    // give realtime info on whether or not an email is unique in the system
+    public function ajax_email_check() {
+        global $wpdb;
+        if (email_exists($_POST['email'])) {
+            echo json_encode('error.');
+        } else{
+            echo json_encode('true');
+        }
+        die();
+    }
+
+    // give realtime info on whether or not a username is unique in the system
+    public function ajax_username_check() {
+        global $wpdb;
+        if (username_exists($_POST['username'])) {
+            echo json_encode('error.');
+        } else{
+            echo json_encode('true');
+        }
+        die();
     }
 
     // the function called after the ore-submit button is clicked in our form
@@ -227,7 +253,7 @@ class OREMain extends OREBase {
                 $markup .= '</div><!-- modal-header -->';
             }
             if (isset($val['markup'])) {
-                $markup .= '<div class="ore-form modal-body ore-body">'.$val['markup'].'</div>';
+                $markup .= '<form class="ore-form modal-body ore-body">'.$val['markup'].'</form>';
             }
             $button_classes = 'button ore-button';
             $both = (is_array($val['default']) && is_array($val['alternative'])) ? true : false;

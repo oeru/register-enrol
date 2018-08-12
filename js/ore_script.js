@@ -13,7 +13,9 @@ jQuery(document).ready(function() {
     var $ = jQuery;
     var form = $(this);
     var auth = false;
+    var form_container = '#ore-container';
     var form_parent = '#ore-login-status';
+    var form_class = '.ore-form';
 
     /*
      * Check the URL for #hash
@@ -124,7 +126,6 @@ jQuery(document).ready(function() {
             // course enrollment status
             text += '<div class="ore-menu-block '+extra_class+' ore-second">'+course_text+'<span id="ore-'+cat+'-button" class="button ore-button" data-toggle="modal" data-target="#ore-modal">'+label+'</span></div>';
         }
-        //text +=  '<div class="ore-menu-block '+extra_class+' ore-right">'+logout_text+'</div>';
         LOG('new text: '+text);
         // enable menus
         prepare_menu(text);
@@ -152,15 +153,13 @@ jQuery(document).ready(function() {
     function set_country(form, country) {
         LOG('setting country to ', country);
         // Todo: this doesn't work after closing the dialogue the first time, and reopening.
-        //form.find('#ore-country').val(country);
-        $('#ore-container').find('#ore-country').val(country);
+        $(form_container).find('#ore-country').val(country);
         LOG('finished setting country');
     }
 
     // replace user tokens
     function replace_user_tokens(string, user) {
         for (var key in user) {
-            //LOG('key: '+key+' val: '+user[key]);
             if (key === 'course') {
                 for (var course_key in user['course']) {
                     string = string.replace('{'+course_key+'}', user['course'][course_key]);
@@ -182,7 +181,7 @@ jQuery(document).ready(function() {
         })
         return match;
     }
-
+    // set up the menu infrastructure
     function prepare_menu(text) {
         // menu pause and fade times in milliseconds
         var pausetime = 3000;
@@ -207,9 +206,8 @@ jQuery(document).ready(function() {
                 // Process Menu Click Events
                 $(this).next().click( function (e) {
                     LOG('click in menu - this should be passed on!')
-                    //menu = $(this).next();
-                    LOG('this = ', $(this));
-                    LOG('e = ', e);
+                    //LOG('this = ', $(this));
+                    //LOG('e = ', e);
                     if (!menu_events(e.target.id)) {
                         e.stopPropagation();
                     }
@@ -231,7 +229,6 @@ jQuery(document).ready(function() {
             // manage positioning of the menus (voffset pixels above and hoffset left of trigger)
             var right = 0;
             var top = trigger.outerHeight();
-            //LOG('top right:'+right+', '+top);
             trigger.next().css('right',right);
             trigger.next().css('top',top);
         }
@@ -241,7 +238,6 @@ jQuery(document).ready(function() {
                 // if the user explicitly clicks on a menu button, wait, and then fade
                 $('.'+menu).click(function() {
                     LOG('click on menu to start delayed fade out');
-                    //$(this).remove();
                     $(this).animate({opacity: 1.0}, {duration: postclicktime, complete: function() {
                         $(this).fadeOut(fadetime);
                     }});
@@ -255,7 +251,6 @@ jQuery(document).ready(function() {
             $(this).hide();
         });
     }
-
     // process button clicks and other events
     function menu_events(target) {
         if (target == 'ore-log-out-button') {
@@ -273,7 +268,6 @@ jQuery(document).ready(function() {
             return show_modal(id);
         }
     }
-
     /*
     * End menu stuff
     */
@@ -281,7 +275,6 @@ jQuery(document).ready(function() {
     /*
      * we're using hash values to trigger modals and make them bookmarkable
      */
-
     // set the hash of the current modal
     function set_hash(hash) {
         current = get_hash();
@@ -295,14 +288,12 @@ jQuery(document).ready(function() {
             window.location.hash = hash;
         }
     }
-
     // get the current hash, if any
     function get_hash() {
         hash = window.location.hash;
         hash = (hash == "") ? false : hash.replace('#', '');
         return hash;
     }
-
     // clear the current hash
     function clear_hash() {
         LOG('Clearing hash');
@@ -312,7 +303,7 @@ jQuery(document).ready(function() {
         }
         window.location.hash = "";
     }
-
+    // reload the page, e.g. after a login
     function reload(hash = null) {
         current = window.location.href;
         LOG('forcing reload of '+current);
@@ -322,8 +313,6 @@ jQuery(document).ready(function() {
             window.location.hash = hash;
         }
     }
-
-
     /*
     * End hash stuff
     */
@@ -331,13 +320,13 @@ jQuery(document).ready(function() {
     /*
     * Modal dialogue stuff
     */
-    $('#ore-container').on('show.bs.modal', '.ore-modal', function(e) {
+    $(form_container).on('show.bs.modal', '.ore-modal', function(e) {
         LOG('showing modal! e ', e);
         $(this).modal('show');
     });
     // closing based on either clicking a "Cancel" button, or the
     // clock "X" on the form...
-    $('#ore-container').on('click', '.ore-button', function(e) {
+    $(form_container).on('click', '.ore-button', function(e) {
         id = action_from_id(e.target.id);
         if (current_modal == id) {
             LOG('click1! (button) id '+id);
@@ -361,17 +350,14 @@ jQuery(document).ready(function() {
             show_modal(id);
         }
     });
-    //
     // default close button behaviour (on each modal)
-    $('#ore-container').on('click', '.close', function(e) {
+    $(form_container).on('click', '.close', function(e) {
         LOG('click2! (close) e.target ', e.target);
         if (value_in_object(e.target.classList, 'close')) {
             LOG('close the modal!');
-            //$('#ore-container .ore-modal.modal').modal('hide');
             close_modal();
         }
     });
-
     // show a modal based on its id, the key in the modals array in ore_modals.php
     function show_modal(id ) {
         LOG('show_modal', id);
@@ -400,18 +386,15 @@ jQuery(document).ready(function() {
             // set the "current_modal" value...
             current_modal = id;
             LOG('modal '+current_modal+' should be visible...');
-            //set_hash(id);
-            //return true;
         } else {
             LOG('click within menu isn\'t on a known button');
             return false;
         }
     }
-
     // close any currently open modal
     function close_modal(hash = null) {
         LOG('closing currently open modal');
-        $('#ore-container .ore-modal.modal').hide();
+        $(form_container+' .ore-modal.modal').hide();
         LOG('setting current_modal to null');
         current_modal = null;
         if (hash != null) {
@@ -419,8 +402,6 @@ jQuery(document).ready(function() {
             set_hash(hash);
         }
     }
-
-
     // respond to modal events like button clicks on modal forms
     function modal_events(action){
         var special_data = {};
@@ -491,9 +472,9 @@ jQuery(document).ready(function() {
         }
         return true;
     }
-
+    // get the values from a form
     function get_form_values() {
-        form = $('#ore-container').find('.ore-form');
+        form = $(form_container).find('.ore-form');
         var value = {};
         LOG('found ', form);
         $(form).each(function() {
@@ -506,7 +487,6 @@ jQuery(document).ready(function() {
         });
         return value;
     }
-
     // process ajax requests returning data to the server
     // and displaying error/status messages where relevant
     function ajax_submit(action, special_data) {
@@ -589,7 +569,6 @@ jQuery(document).ready(function() {
             }
         });
     }
-
     // combine data arrays
     function concat_data(one, two) {
         LOG('one ', one);
@@ -600,7 +579,6 @@ jQuery(document).ready(function() {
         LOG('resulting array: ', one);
         return one;
     }
-
     // we need to strip the default action out of ids in the form of
     // ore-[action]-[default|alternative]-action
     function action_from_id(id) {
@@ -610,7 +588,7 @@ jQuery(document).ready(function() {
         LOG('returning action ', action);
         return action;
     }
-
+    // get a modal identifier (token) from the CSS id
     function token_from_id(id) {
         LOG('token_from_id, id = '+id);
         terms = id.split('-');
@@ -618,7 +596,6 @@ jQuery(document).ready(function() {
         LOG('returning id ', id);
         return id;
     }
-
     /*
     * End Modal dialogue stuff
     */
@@ -647,6 +624,33 @@ jQuery(document).ready(function() {
             return false;
         }
     });
+
+    /*
+     * form validation, e.g. uniqueness of username and email
+     */
+    $(form_class).validate({
+        validClass: 'valid',
+        rules: {
+            'email': true,
+            remote: {
+                url: ore_data.ajaxurl,
+                type: 'POST',
+                data: {
+                    'email': function() {
+                        LOG('in email validation!');
+                        return $('#email').val();
+                    },
+                    'action': 'ore_username_check'
+                }
+            }
+        },
+        messages: {
+            'email': {
+                required: "You must enter a unique email"
+            }
+        }
+    });
+
 
     // the end of the jQuery loop...
 }); // });
