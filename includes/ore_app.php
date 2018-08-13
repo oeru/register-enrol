@@ -103,29 +103,11 @@ class OREMain extends OREBase {
     public function process() {
         $this->log('in process: '.print_r($_POST, true));
         $form_action = $_POST['form_action'];
+        $response = false;
         switch ($form_action) {
             case 'login':
                 $this->log('login');
-                $user_data = array(
-                    'user_login' => sanitize_text_field($_POST['credential']),
-                    'user_password' => $_POST['password'],
-                    'remember' => true
-                );
-                $login = wp_signon($user_data, false);
-                $this->log('login: '.print_r($login, true));
-                // if login fails
-                if (is_wp_error($login)) {
-                    $this->ajax_response(array(
-                        'loggedin' => false,
-                        'result' => $login->get_error_message()
-                    ));
-                } else { // or succeeds
-                    $this->ajax_response(array(
-                        'loggedin' => true,
-                        'result' => 'login successful'
-                    ));
-                    // Todo - record this with the activity register!
-                }
+                $response = $this->login();
                 break;
             case 'password_reset':
                 $this->log('password_reset');
@@ -162,7 +144,21 @@ class OREMain extends OREBase {
                 )));
             }
         }
-
+        return true;
+    }
+    // login process
+    public function login() {
+        $user_data = array(
+            'user_login' => sanitize_text_field($_POST['credential']),
+            'user_password' => $_POST['password'],
+            'remember' => true
+        );
+        $response = wp_signon($user_data, false);
+        $this->log('login: '.print_r($login, true));
+        // if login fails
+        if (is_wp_error($response)) {
+            return $response;
+        }
         return true;
     }
     // enrol a user in a course
