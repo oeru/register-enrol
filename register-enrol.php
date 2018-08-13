@@ -49,16 +49,15 @@ define('ORE_ACTION', 'register-enrol');
 define('ORE_ID', 'register-enrol');
 define('ORE_TITLE', 'Register Enrol');
 define('ORE_MENU', 'Register Enrol');
-define('ORE_SHORTCODE', 'ore_form');
-define('ORE_WIDGET', 'ORE Widget');
-define('ORE_GETSTARTED', 'Start Learning with the OERu');
-// Note: altering this requires change to themes/oeru_course/header.php to suit
-define('ORE_GETSTARTED_SLUG', 'start-learning');
 define('ORE_TEMPLATES', 'register-enrol');
 define('ORE_ID', 'register-enrol');
 define('ORE_STYLE', 'ore-style');
 define('ORE_SCRIPT', 'ore-script');
 define('ORE_CLASS', 'ore-form');
+define('ORE_COURSE_ROLE', 'sbscriber');
+// these two nodes must be defined in the theme as HTML id attributes
+define('ORE_CONTAINER', 'ore-container');
+define('ORE_LOGIN_STATUS', 'ore-login-status');
 // support link for users of this plugin...
 define('ORE_SUPPORT_FORUM', 'https://forums.oeru.org/t/register-enrol');
 define('ORE_SUPPORT_BLOG', 'https://course.oeru.org/support/studying-courses/register-enrol/');

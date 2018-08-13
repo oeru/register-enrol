@@ -1,9 +1,9 @@
 # register-enrol
 A plugin allowing learners to login or register (as WP users) and enrol (and unenroll) in OERu courses (subsites).
 
-## Credits
+## License
 
-This plugin is licensed under the GPLv3 and is, in part, derived from [Login With Ajax](https://wordpress.org/plugins/login-with-ajax/) (also GPLv3 licensed) with significant changes to its behaviour and with additional content, especially related to multisite behaviour.
+This plugin is licensed under the GNU General Public License (GPL) version 3.
 
 ## Plugin Purpose
 
@@ -15,6 +15,10 @@ Being registered confers benefits like proof of participation, maintenance of "s
 
 This plugin provides streamlined services to allow a learner who wants to register for the Course site to do so, and then, as an authenticated (logged in) WordPress user, gives them the ability to easily enrol (or unenrol) in any of  our catalogue of courses.
 
+## Enabling the plugin
+
+Crucially: for the plugin to work, the WordPress theme being used __must implement__ a suitable HTML node in the desired part of its navigation which must have HTML attribute of "ORE_CONTAINER" as defined in the main plugin file.
+
 ## Features
 
 * fully multisite aware, allowing authenticated users to "enrol" in networks/blogs/subsites(the WP nomenclature is somewhat inconsistent), what we call "courses".
@@ -24,8 +28,6 @@ This plugin provides streamlined services to allow a learner who wants to regist
 * mobile compatible layout and user interface
 * logs the participation of logged in learners (WP users) in courses (subsites)
 * provides a dashboard of enrolled courses for logged in learners
-
-
 
 ## Requirements, Use Cases, and Future Plans
 

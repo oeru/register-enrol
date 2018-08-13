@@ -13,8 +13,8 @@ jQuery(document).ready(function() {
     var $ = jQuery;
     var form = $(this);
     var auth = false;
-    var form_container = '#ore-container';
-    var form_parent = '#ore-login-status';
+    var form_container = '#'+ore_data.container;
+    var form_parent = '#'+ore_data.login_status;
     var form_class = '.ore-form';
 
     /*
@@ -140,21 +140,23 @@ jQuery(document).ready(function() {
     // on a click outside the menu, close the menu
     $(document).click(function(){
         LOG('closing menus!');
-        $(".ore-menu").hide();
+        $("."+menu).hide();
     });
 
     // replace country selector tag with country selector
-    function add_countries(form, select) {
+    function add_countries(markup, select) {
         //LOG('adding country selector', form);
-        return form.replace('{country_picker}', select);
+        return markup.replace('{country_picker}', select);
     }
 
     // set the country of the current user
     function set_country(form, country) {
         LOG('setting country to ', country);
         // Todo: this doesn't work after closing the dialogue the first time, and reopening.
-        $(form_container).find('#ore-country').val(country);
-        LOG('finished setting country');
+        LOG('Form = ', form);
+        form.find('#ore-country').val(country);
+        LOG('value: ', form.find('#ore-country').val());
+        LOG('finished setting country', form.find('#ore-country').length);
     }
 
     // replace user tokens
@@ -371,18 +373,22 @@ jQuery(document).ready(function() {
             // clear any existing hashes
             clear_hash();
             // show a the new modal
-            form = modals[id].markup;
+            form_markup = modals[id].markup;
             LOG('Launch ', id);
-            form = replace_user_tokens(form, user);
+            form_markup = replace_user_tokens(form_markup, user);
             LOG('after replace_user_tokens');
             if (id == 'edit_profile' || id == 'register') {
                 LOG('adding countries');
-                form = add_countries(form, ore_data.country_select);
-                set_country(form, user.country);
-                LOG('finished adding and setting country');
+                form_markup = add_countries(form_markup, ore_data.country_select);
             }
             LOG('appending form to parent');
-            form = $(form_parent).append(form);
+            // here form is a DOM node...
+            form = $(form_parent).append(form_markup);
+            if (id == 'edit_profile' || id == 'register') {
+                set_country(form, user.country);
+                //$(form_container).find('#ore-country').val(user.country);
+                //LOG('finished adding and setting country to ', $(form_container).find('#ore-country').val());
+            }
             // set the "current_modal" value...
             current_modal = id;
             LOG('modal '+current_modal+' should be visible...');
@@ -455,6 +461,8 @@ jQuery(document).ready(function() {
                 action == 'successfully_unenrolled') {
                 LOG('closing informational modal: '+action);
                 close_modal();
+                reload();
+                return true;
             } else {
                 // unless we get to a requested action that's not catered for here,
                 // in which case, bail, and say something!
@@ -526,7 +534,7 @@ jQuery(document).ready(function() {
                         LOG('Successfully enrolled!');
                         set_hash('successfully_enrolled');
                     } else if (action == 'leave') {
-                        LOG('Successfully enrolled!');
+                        LOG('Successfully unenrolled!');
                         set_hash('successfully_unenrolled');
                     } else {
                         LOG('nothing to do for action: '+action);
@@ -629,6 +637,7 @@ jQuery(document).ready(function() {
      * form validation, e.g. uniqueness of username and email
      */
     $(form_class).validate({
+        debug: true,
         validClass: 'valid',
         rules: {
             'email': true,

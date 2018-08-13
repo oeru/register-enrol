@@ -35,6 +35,8 @@ class OREMain extends OREBase {
         wp_localize_script(ORE_SCRIPT, 'ore_data', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_submit' => wp_create_nonce('ore-submit-nonce'),
+            'container' => ORE_CONTAINER,
+            'login_status' => ORE_LOGIN_STATUS,
             'user' => $user_array,
             'modals' => $this->get_modals(),
             'country_select' => $this->get_country_selector($user_country)
@@ -52,11 +54,11 @@ class OREMain extends OREBase {
         add_action('wp_ajax_nopriv_ore_email_check', array($this, 'ajax_email_check'));
         add_action('wp_ajax_nopriv_ore_username_check', array($this, 'ajax_username_check'));
         // allows us to add a class to our post
-        add_filter('body_class', array($this, 'add_post_class'));
-        add_filter('post_class', array($this, 'add_post_class'));
+        //add_filter('body_class', array($this, 'add_post_class'));
+        //add_filter('post_class', array($this, 'add_post_class'));
         // create a default page if it doesn't already exist...
-        $this->log('create post: '.ORE_GETSTARTED_SLUG);
-        $this->create_post(ORE_GETSTARTED_SLUG);
+        //$this->log('create post: '.ORE_GETSTARTED_SLUG);
+        //$this->create_post(ORE_GETSTARTED_SLUG);
     }
 
     // give realtime info on whether or not an email is unique in the system
@@ -139,17 +141,65 @@ class OREMain extends OREBase {
                 break;
             case 'enrol':
                 $this->log('enrol');
+                $response = $this->enrol($_POST['user_id'], $_POST['course_id']);
                 break;
             case 'leave':
                 $this->log('leave');
+                $response = $this->leave($_POST['user_id'], $_POST['course_id']);
                 break;
             default:
                 $this->log('default action');
                 break;
         }
+        // if response isn't 'true'
+        if ($response != true){
+            $this->log('failed to complete '.$form_action);
+            if (is_array($response)) {
+                $this->log('response is '.print_r($response, true));
+                $this->ajax_response(array('success' => array(
+                    $form_action => false,
+                    'error' => $response->get_error_message()
+                )));
+            }
+        }
+
         return true;
     }
-
+    // enrol a user in a course
+    public function enrol($user_id, $course_id) {
+        $this->log('user '.$user_id.' enrolling in course '.$course_id);
+        $response = add_user_to_blog($course_id, $user_id, ORE_COURSE_ROLE);
+        $check = is_user_member_of_blog($user_id, $course_id);
+        if ($check) {
+            $this->log('user '.$user_id.' is a member of '.$course_id);
+        } else {
+            $this->log('user '.$user_id.' is not a member of '.$course_id);
+        }
+        if (is_wp_error($response)) {
+            $this->log('enrolment failed');
+            return $response;
+        }
+        $this->log('enrolment succeeded');
+        return true;
+    }
+    // unenrol a user from a course
+    public function leave($user_id, $course_id) {
+        $this->log('user '.$user_id.' leaving course '.$course_id);
+        $response = remove_user_from_blog($user_id, $course_id);
+        $check = is_user_member_of_blog($user_id, $course_id);
+        if ($check) {
+            $this->log('user '.$user_id.' is still a member of '.$course_id);
+        } else {
+            $this->log('user '.$user_id.' is no longer a member of '.$course_id);
+        }
+        if (is_wp_error($response)) {
+            $this->log('unenrolment failed');
+            return $response;
+        }
+        $this->log('unenrolment succeeded');
+        return true;
+    }
+    // get a user object suitable for passing to javascript
     public function get_user($user_id = null) {
         // get the current user
         if ($user_id === null) {
@@ -260,7 +310,7 @@ class OREMain extends OREBase {
             if (is_array($val['default'])) {
                 $default = $val['default'];
                 $classes = $button_classes.' ore-default';
-                $div_classes = ($both) ? ' ore-left' : '';
+                $div_classes = ($both) ? ' ore-left' : 'singleton';
                 $name = 'ore-default-'.$val['token'];
                 $markup .= '<div class="modal-footer"><div class="ore-default-wrapper ore-modal-block'.$div_classes.'">';
                 if (isset($default['label'])) {
@@ -315,103 +365,6 @@ class OREMain extends OREBase {
             //$this->log('dialog['.$index.']: '.print_r($dialogs[$index], true));
         }
         return $dialogs;
-    }
-
-    // create a default post to hold our login form...
-    public function create_post($slug) {
-        global $wp_rewrite;
-        // we might need to instantiate this
-        if ($wp_rewrite === NULL) { $wp_rewrite = new wp_rewrite; }
-        $post_id = -1; // this is non-post right now...
-        if (!($post_id = $this->slug_exists($slug))) {
-            $this->log('Creating a post at '.$slug.'...');
-            $post = $this->get_post($slug);
-            // check to see if this page title is already used...
-            $blog_page_check = get_page_by_title($post['post_title']);
-            if (!isset($blog_page_check->ID)) {
-                if (!($post_id = wp_insert_post($post))) {
-                    $this->log('Inserting post at '.$slug.' failed!');
-                    return false;
-                }
-            } else {
-                $this->log('Already have a page with this title - id: '.$blog_page_check->ID);
-                return false;
-            }
-        } else {
-            $this->log('Not creating the content again.');
-        }
-        $this->log('returing post id '.$post_id);
-        return $post_id;
-    }
-
-    // check to see if a post with the given slug already exists...
-    public function slug_exists($slug) {
-        global $wpdb;
-        $this->log('checking for a page at '.$slug);
-        if ($wpdb->get_row("SELECT post_name FROM wp_posts WHERE post_name = '" . $slug . "'", 'ARRAY_A')) {
-            return true;
-        }
-        return false;
-    }
-
-    public function add_post_class($classes) {
-        global $post;
-        $post_slug=$post->post_name;
-        $this->log('running class filter - post_slug = '.$post_slug);
-        if ($post_slug === ORE_GETSTARTED_SLUG) {
-            $this->log('setting class on '.ORE_GETSTARTED_SLUG.' to '.ORE_CLASS);
-            $classes[] = ORE_CLASS;
-        }
-        return $classes;
-    }
-
-    public function get_data() {
-        return $this->data;
-    }
-
-    // provide the actual post itself
-    private function get_post($slug) {
-        $this->log('in get_post');
-        // create the post array with boilerplate settings...
-        $post = array(
-            'comment_status' => 'closed',
-            'ping_status' => 'closed',
-            'post_status' => 'publish',
-            'post_type' => 'page'
-        );
-        // Set the Author, Slug, title and content of the new post
-        $post['post_author'] = 1;  // the default
-        $post['post_name'] = $slug;
-        $post['post_slug'] = $slug;
-        $post['post_title']  = ORE_GETSTARTED;
-        $post['post_content'] = "<!-- wp:paragraph -->
-<p>If you are interested in higher education opportunities, optionally resulting in formal academic credits or even a qualification at a very reasonable cost, you've come to the right place! </p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>The OERu offers a range of courses in a variety of fields. The only cost to you will come <em>after</em> you've taken the course, and only if you would like your new found learning to be formally assessed by an <a href='https://oeru.org/oeru-partners'>OERu partner</a>! </p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>You don't need to log in to see OERu learning materials, but to engage more fully, to have us keep track of your progress, and to accumulate evidence of participation, you can Register an account on our Course system - there's no cost, no credit card or anything!</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>If you've already got an account you can log in using your credentials. If you're not sure, try logging in. </p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>If you've forgot your password, no problem! You can request a password reset link be sent to you by email. </p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>[".ORE_SHORTCODE."]</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>If you're already logged in, your details will be displayed here as confirmation!<br/></p>
-<!-- /wp:paragraph -->";
-        return $post;
     }
 
     // return a suitably formatted select widget with the countries in it to pass

@@ -341,6 +341,10 @@ static $modals = array(
             'class' => 'submit',
             'success' => 'successfully_unenrolled',
         ),
+        'alternative' => array(
+            'label' => 'Cancel',
+            'class' => 'cancel',
+        ),
     ),
     'successfully_unenrolled' => array(
         'title' => 'Successfully unenrolled from "{course_title}" ({course_tag})',

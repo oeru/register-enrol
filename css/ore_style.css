@@ -30,6 +30,10 @@ article.ore-form .container .entry-content > div.ore {
     float: left;
     padding-right: 5px;
 }
+#ore-container .ore-modal-block.singelton {
+    float: none;
+    padding: auto;
+}
 /*#ore-container .ore-right { padding-left: 5px; }
 #ore-container .ore-half { width: 50%; }
 #ore-container .ore-third { width: 33.33%; }*/
