@@ -219,3 +219,20 @@ article.ore-form .container .entry-content > div.ore {
     font-size: 90%;
     color: #737373 !important;
 }
+
+/* error messages on modals */
+#ore-error-wrapper {
+    text-align: left;
+}
+#ore-error-wrapper h2 {
+    color: #555;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+#ore-error-wrapper ol {
+    list-style: none;
+}
+#ore-error-wrapper li {
+    display: block;
+    list-style: none;
+}

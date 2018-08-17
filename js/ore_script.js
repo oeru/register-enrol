@@ -164,17 +164,20 @@ jQuery(document).ready(function() {
         for (var key in user) {
             if (key === 'course') {
                 for (var course_key in user['course']) {
-                    string = string.replace('{'+course_key+'}', user['course'][course_key]);
+                    replacement = (user['course'][course_key] == null) ? "No value" : user['course'][course_key];
+                    string = string.replace('{'+course_key+'}', replacement);
                 }
+            } else {
+                replacement = (user[key] == null) ? "No value" : user[key];
+                string = string.replace('{'+key+'}', user[key]);
             }
-            string = string.replace('{'+key+'}', user[key]);
         }
         return string;
     }
 
     function value_in_object(obj, needle) {
         match = false;
-        obj.forEach(function (value, key) {
+        obj.forEach(function(value, key) {
             //LOG('key: '+key+' val: '+String(value)+' needle: '+String(needle));
             if (String(needle).trim() == String(value).trim()) {
                 LOG('strings are equal!');
@@ -452,15 +455,16 @@ jQuery(document).ready(function() {
                 };
             // informational modals, if OK is clicked, just close them
             } else if (action == 'successful_login' ||
-                action == 'successful_reset' ||
-                action == 'successful_registration' ||
+    //            action == 'successful_reset' ||
+    //            action == 'successful_registration' ||
                 action == 'profile_saved' ||
-                action == 'profile_save_failed' ||
+    //            action == 'profile_save_failed' ||
                 action == 'successfully_enrolled' ||
-                action == 'failed_to_enrol' ||
+    //            action == 'failed_to_enrol' ||
                 action == 'successfully_unenrolled') {
                 LOG('closing informational modal: '+action);
                 close_modal();
+                LOG('reloading');
                 reload();
                 return true;
             } else {
@@ -539,7 +543,8 @@ jQuery(document).ready(function() {
                     } else {
                         LOG('nothing to do for action: '+action);
                     }
-                } else { // if it failed, show error info
+                } else if (data.hasOwnProperty('failed')) { // if it failed, show error info
+                    //LOG('wrapper html: ', wrapper.val());
                     if (action == 'register') {
                         LOG('Failed to Register!');
                         set_hash('failed_registration');
@@ -564,9 +569,19 @@ jQuery(document).ready(function() {
                     } else {
                         LOG('nothing to do for action: '+action);
                     }
-
                 }
                 check_hash(window.location.hash);
+                LOG('Showing errors!', data.failed.errors.ore_error);
+                wrapper = $(form_container).find('#ore-error-wrapper');
+                LOG('found wrapper ('+wrapper.length+'): ', wrapper);
+                error_msg = show_errors(data.failed.errors.ore_error);
+                LOG('error message: '+error_msg);
+                wrapper.append(error_msg);
+                LOG('htmls: ', wrapper);
+                test_wrapper = $(form_container).find('.ore-form');
+                LOG('test_wrapper: ', test_wrapper);
+                children = $(form_container).children();
+                LOG('children: ', children);
                 return true;
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -603,6 +618,21 @@ jQuery(document).ready(function() {
         id = terms.slice(1, terms.length-1).join('_');
         LOG('returning id ', id);
         return id;
+    }
+    // show the errors in a useful way
+    function show_errors(errors) {
+        error_msg = "";
+        if (errors.length > 0) {
+            error_msg += '<div class="ore-errors"><h2>Errors</h2><ol class="ore-errors">';
+            LOG('there are '+errors.length+' errors to report');
+            errors.forEach(function(value, key) {
+                error_msg += '<li>'+value+'</li>';
+            });
+            error_msg += '</ol></div>';
+        } else {
+            LOG('no errors to report!');
+        }
+        return error_msg;
     }
     /*
     * End Modal dialogue stuff

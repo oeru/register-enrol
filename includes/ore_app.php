@@ -11,10 +11,18 @@ class OREMain extends OREBase {
     // ORE -> ORE variables
 	public static $current_user; // If logged in upon instantiation, it is a user object.
     // returns an instance of this class if called, instantiating if necessary
+    public $errors;
 
     public static function get_instance() {
         NULL === self::$instance and self::$instance = new self();
         return self::$instance;
+    }
+
+    public function get_errors() {
+        if (!is_array($this->errors)) {
+            $this->errors = new WP_Error();
+        }
+        return $this->errors;
     }
 
     // this starts everything...
@@ -32,7 +40,8 @@ class OREMain extends OREBase {
             'jquery', 'jquery-form', 'jquery-validate'));
         $user_array = $this->get_user();
         $user_country = (isset($user_array['country'])) ? $user_array['country'] : "";
-        wp_localize_script(ORE_SCRIPT, 'ore_data', array(
+        // info to send to jQuery...
+        $ore_data = array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_submit' => wp_create_nonce('ore-submit-nonce'),
             'container' => ORE_CONTAINER,
@@ -40,7 +49,13 @@ class OREMain extends OREBase {
             'user' => $user_array,
             'modals' => $this->get_modals(),
             'country_select' => $this->get_country_selector($user_country)
-        ));
+        );
+        // if there're errors, include that.
+        if (count($this->errors)) {
+            $this->log('sending the errors array');
+            $ore_data['errors'] = $this->errors;
+        }
+        wp_localize_script(ORE_SCRIPT, 'ore_data', $ore_data);
         // our css
         wp_register_style(ORE_STYLE, ORE_URL.'css/ore_style.css');
         wp_enqueue_style(ORE_STYLE);
@@ -53,12 +68,6 @@ class OREMain extends OREBase {
         add_action('wp_ajax_nopriv_ore_submit', array($this, 'ajax_submit'));
         add_action('wp_ajax_nopriv_ore_email_check', array($this, 'ajax_email_check'));
         add_action('wp_ajax_nopriv_ore_username_check', array($this, 'ajax_username_check'));
-        // allows us to add a class to our post
-        //add_filter('body_class', array($this, 'add_post_class'));
-        //add_filter('post_class', array($this, 'add_post_class'));
-        // create a default page if it doesn't already exist...
-        //$this->log('create post: '.ORE_GETSTARTED_SLUG);
-        //$this->create_post(ORE_GETSTARTED_SLUG);
     }
 
     // give realtime info on whether or not an email is unique in the system
@@ -95,7 +104,16 @@ class OREMain extends OREBase {
        $this->log("processing submit form...");
        // generate the response
        header( "Content-Type: application/json" );
-       $this->ajax_response(array('success' => $this->process()));
+       $result = $this->process();
+       $this->log('returned result of '.print_r($result, true));
+       if (!is_wp_error($result)) {
+           $this->log('successfully completed '.$_POST['form_action']);
+           $this->ajax_response(array('success' => $result));
+       } else {
+           $this->log('We\'ve got an error!');
+           $this->log('failed to complete '.$_POST['form_action'].' with errors '.print_r($result, true));
+           $this->ajax_response(array('failed' => $result));
+       }
        $this->log('ajax_submit done, dying...');
        wp_die();
     }
@@ -109,8 +127,13 @@ class OREMain extends OREBase {
                 $this->log('login');
                 $response = $this->login();
                 break;
-            case 'password_reset':
+            case 'reset_password':
+                $response = $this->reset_password();
                 $this->log('password_reset');
+                break;
+            case 'update_password':
+                $response = $this->update_password();
+                $this->log('update_password');
                 break;
             case 'register':
                 $this->log('register');
@@ -123,26 +146,22 @@ class OREMain extends OREBase {
                 break;
             case 'enrol':
                 $this->log('enrol');
-                $response = $this->enrol($_POST['user_id'], $_POST['course_id']);
+                $response = $this->enrol();
                 break;
             case 'leave':
                 $this->log('leave');
-                $response = $this->leave($_POST['user_id'], $_POST['course_id']);
+                $response = $this->leave();
                 break;
             default:
                 $this->log('default action');
                 break;
         }
         // if response isn't 'true'
-        if ($response != true){
+        if (is_wp_error($response)) {
             $this->log('failed to complete '.$form_action);
-            if (is_array($response)) {
-                $this->log('response is '.print_r($response, true));
-                $this->ajax_response(array('success' => array(
-                    $form_action => false,
-                    'error' => $response->get_error_message()
-                )));
-            }
+            $this->log('response is '.print_r($response, true));
+            //$this->ajax_response(array('success' => $response));
+            return $response;
         }
         return true;
     }
@@ -158,11 +177,124 @@ class OREMain extends OREBase {
         // if login fails
         if (is_wp_error($response)) {
             return $response;
+        } else {
+            $user = $response; // just for clarity :)
+            wp_set_auth_cookie($user->ID);
         }
         return true;
     }
+    // reset password process - from "function retrieve_password()" in wp-login.php
+    public function reset_password() {
+        // get the error object
+        $errors = $this->get_errors();
+        // ensure we have valid credentials from with which to find the relevant user account
+        if (empty($_POST['credential']) || !is_string($_POST['credential'])) {
+            $this->log('missing the credential');
+            $errors->add(ORE_ERROR_LABEL, __('<strong>ERROR</strong>: Enter a username or email address.'));
+        } elseif (strpos($_POST['credential'], '@')) {
+            $this->log('got an email: '.$_POST['credential']);
+            $user_data = get_user_by('email', trim(wp_unslash($_POST['credential'])));
+            if (empty($user_data)) {
+                $this->log('no user found');
+                $errors->add(ORE_ERROR_LABEL, __('<strong>ERROR</strong>: There is no user registered with that email address.'));
+            } else {
+                $this->log('found user id: '.$user_data->ID);
+            }
+        } else {
+            $login = trim($_POST['credential']);
+            $user_data = get_user_by('login', $login);
+        }
+        // call relevant hook
+        do_action('lostpassword_post', $errors);
+        // deal with errors
+        if ($errors->get_error_code()) {
+            return $errors;
+        }
+        if (!$user_data) {
+            $errors->add(ORE_ERROR_LABEL, __('<strong>ERROR</strong>: Invalid username or email.'));
+            return $errors;
+        }
+        // Redefining user_login ensures we return the right case in the email.
+        $user_login = $user_data->user_login;
+        $user_email = $user_data->user_email;
+        $key = get_password_reset_key($user_data);
+        if (is_wp_error($key)) {
+            return $key;
+        }
+        if (is_multisite()) {
+            $site_name = get_network()->site_name;
+        } else {
+            // The blogname option is escaped with esc_html on the way into the database
+            // in sanitize_option we want to reverse this for the plain text arena of emails.
+            $site_name = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+        }
+        $message = __( 'Someone has requested a password reset for the following account:' ) . "\r\n\r\n";
+        /* translators: %s: site name */
+        $message .= sprintf( __( 'Site Name: %s'), $site_name ) . "\r\n\r\n";
+        /* translators: %s: user login */
+        $message .= sprintf( __( 'Username: %s'), $user_login ) . "\r\n\r\n";
+        $message .= __( 'If this was a mistake, just ignore this email and nothing will happen.' ) . "\r\n\r\n";
+        $message .= __( 'To reset your password, visit the following address:' ) . "\r\n\r\n";
+        $message .= '<' . network_site_url( "wp-login.php?action=rp&key=$key&login=" . rawurlencode( $user_login ), 'login' ) . ">\r\n";
+        /* translators: Password reset email subject. %s: Site name */
+        $title = sprintf( __( '[%s] Password Reset' ), $site_name );
+        // apply the filter for password retrieval
+        $title = apply_filters( 'retrieve_password_title', $title, $user_login, $user_data );
+        if ($message && !wp_mail($user_email, wp_specialchars_decode($title), $message)) {
+            wp_die(__('The email could not be sent.')."<br />\n".__('Possible reason: your host may have disabled the mail() function.'));
+        }
+        return true;
+    }
+    // update password, requires current password.
+    public function update_password() {
+        $this->log('in update_password');
+        $errors = $this->get_errors();
+        $user_id = ($_POST['user_id'] == '') ? false : trim($_POST['user_id']);
+        $current_password = (!isset($_POST['current-password']) || $_POST['current-password'] == '') ? false : $_POST['current-password'];
+        $new_password = (!isset($_POST['new-password']) || $_POST['new-password'] == '') ? false : $_POST['new-password'];
+        $confirm_password = (!isset($_POST['confirm-password']) || $_POST['confirm-password'] == '') ? false : $_POST['confirm-password'];
+        $this->log('current_password = ('.$current_password.')');
+        if (!$user_id ||
+            !$current_password ||
+            !$new_password ||
+            !$confirm_password) {
+            $this->log('found a problem with the values');
+            if (!$user_id) {
+                $errors->add(ORE_ERROR_LABEL, 'No user id was provided!');
+            }
+            if (!$current_password) {
+                $errors->add(ORE_ERROR_LABEL, 'You must enter your current password');
+            }
+            if (!$new_password) {
+                $errors->add(ORE_ERROR_LABEL, 'You must enter your new password');
+            }
+            if (!$confirm_password) {
+                $errors->add(ORE_ERROR_LABEL, 'You must enter your new password again to guard against typos');
+            } else if ($confirm_password != $new_password) {
+                $errors->add(ORE_ERROR_LABEL, 'Your confirmation password is not the same as your new password');
+            }
+            //$this->log('errors: '.print_r($errors, true));
+            $this->errors = $errors;
+            return $errors;
+        } else {
+            $this->log('all details are added, setting new password');
+            return true;
+        }
+    }
     // enrol a user in a course
-    public function enrol($user_id, $course_id) {
+    public function enrol() {
+        $errors = $this->get_errors();
+        if (empty($_POST['user_id']) || empty($_POST['course_id'])) {
+            if (empty($_POST['user_id'])) {
+                $errors->add(ORE_ERROR_LABEL, 'No user id was provided!');
+            }
+            if (empty($_POST['course_id'])) {
+                $errors->add(ORE_ERROR_LABEL, 'No course id was provided!');
+            }
+            return $errors;
+        }
+        $user_id = $_POST['user_id'];
+        $course_id = $_POST['course_id'];
         $this->log('user '.$user_id.' enrolling in course '.$course_id);
         $response = add_user_to_blog($course_id, $user_id, ORE_COURSE_ROLE);
         $check = is_user_member_of_blog($user_id, $course_id);
@@ -179,7 +311,17 @@ class OREMain extends OREBase {
         return true;
     }
     // unenrol a user from a course
-    public function leave($user_id, $course_id) {
+    public function leave() {
+        $errors = $this->get_errors();
+        if (empty($_POST['user_id']) || empty($_POST['course_id'])) {
+            if (empty($_POST['user_id'])) {
+                $errors->add(ORE_ERROR_LABEL, 'No user id was provided!');
+            }
+            if (empty($_POST['course_id'])) {
+                $errors->add(ORE_ERROR_LABEL, 'No course id was provided!');
+            }
+            return $errors;
+        }
         $this->log('user '.$user_id.' leaving course '.$course_id);
         $response = remove_user_from_blog($user_id, $course_id);
         $check = is_user_member_of_blog($user_id, $course_id);
@@ -306,7 +448,7 @@ class OREMain extends OREBase {
             if (is_array($val['default'])) {
                 $default = $val['default'];
                 $classes = $button_classes.' ore-default';
-                $div_classes = ($both) ? ' ore-left' : 'singleton';
+                $div_classes = ($both) ? ' ore-left' : ' singleton';
                 $name = 'ore-default-'.$val['token'];
                 $markup .= '<div class="modal-footer"><div class="ore-default-wrapper ore-modal-block'.$div_classes.'">';
                 if (isset($default['label'])) {

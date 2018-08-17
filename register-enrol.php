@@ -54,7 +54,8 @@ define('ORE_ID', 'register-enrol');
 define('ORE_STYLE', 'ore-style');
 define('ORE_SCRIPT', 'ore-script');
 define('ORE_CLASS', 'ore-form');
-define('ORE_COURSE_ROLE', 'sbscriber');
+define('ORE_COURSE_ROLE', 'subscriber');
+define('ORE_ERROR_LABEL', 'ore_error');
 // these two nodes must be defined in the theme as HTML id attributes
 define('ORE_CONTAINER', 'ore-container');
 define('ORE_LOGIN_STATUS', 'ore-login-status');
