@@ -203,7 +203,7 @@ static $modals = array(
           	'</div>'.
       		'<div class="form-group">'.
             	'<label for="email">Email</label>'.
-                '<input type="text" class="form-control" id="email" placeholder="me@example.com" value="{email}">'.
+                '<input type="text" class="form-control" id="email" name="email" placeholder="me@example.com" value="{email}">'.
           	'</div>'.
         	'<div class="form-group">'.
                 '<label for="usercountry">Country of origin</label>'.
@@ -249,7 +249,6 @@ static $modals = array(
                 '<label for="current-password">Current Password</label>'.
                 '<input type="password" class="form-control" id="current-password" aria-describedby="helpCurrentPassword">'.
                 '<span id="helpCurrentPassword" class="help-block">Your current password, so that we can ensure you\'re you!<br/>If you can\'t remember your password, you can instead do a <span id="ore-password-reset-auxillary-button" class="link ore-button">Password Reset</span><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
-
           	'</div>'.
             '<div class="form-group">'.
                 '<label for="new-password">New Password</label>'.
@@ -295,7 +294,7 @@ static $modals = array(
     'session_expired' => array(
         'title' => 'Session Exp',
         'markup' => '<p>Your session has timed out. To continue, you must renew your session by entering the password for user {username}.</p>'.
-            '<p class="password"><input id="ore-password" class="password" value="" type="password">password</input></p>',
+            '<p class="password"><input id="password" class="password" value="" type="password">password</input></p>',
         'token' => 'session-expired',
         'default' => array(
             'label' => 'Renew Session',

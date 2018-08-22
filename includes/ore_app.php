@@ -33,7 +33,7 @@ class OREMain extends OREBase {
         // jsquery validate script
         wp_register_script(
             'jquery-validate',
-            'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/jquery.validate.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js',
             array('jquery'), true
         );
         wp_enqueue_script(ORE_SCRIPT, ORE_URL.'js/ore_script.js', array(

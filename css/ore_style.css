@@ -30,7 +30,7 @@ article.ore-form .container .entry-content > div.ore {
     float: left;
     padding-right: 5px;
 }
-#ore-container .ore-modal-block.singelton {
+#ore-container .ore-modal-block.singleton {
     float: none;
     padding: auto;
 }
