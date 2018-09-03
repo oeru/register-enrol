@@ -158,11 +158,11 @@ jQuery(document).ready(function() {
                  LOG('strings are equal!');
                  match = true;
              }
-         })
-         return match;
-     }
-     // set up the menu infrastructure
-     function prepare_menu(text) {
+        })
+        return match;
+    }
+    // set up the menu infrastructure
+    function prepare_menu(text) {
          // menu pause and fade times in milliseconds
          var pausetime = 3000;
          var postclicktime = 500;
@@ -189,7 +189,10 @@ jQuery(document).ready(function() {
                      //LOG('this = ', $(this));
                      //LOG('e = ', e);
                      if (!menu_events(e.target.id)) {
+                         LOG('menu_event '+e.target.id+' was false - stopping propagation');
                          e.stopPropagation();
+                     } else {
+                         LOG('menu_event '+e.target.id+' was true... eventually stopping propagation');
                      }
                  });
                  // don't send this click to the "hide menu" function below.
@@ -242,16 +245,259 @@ jQuery(document).ready(function() {
              LOG('going to url', goto);
              window.location.href = goto;
              return true;
-         } else {
-             LOG('processing target: ', target);
-             id = token_from_id(target);
-             LOG('got id: ', id);
-             return show_modal(id);
-         }
-     }
-     /*
+        } else {
+            LOG('processing target: ', target);
+            id = token_from_id(target);
+            LOG('got id: ', id);
+            return show_modal(id);
+        }
+    }
+    /*
      * End menu stuff
      */
+
+    /*
+     * form validation, e.g. uniqueness of username and email
+     */
+    var validation_defaults = {
+        debug: true
+    }
+    // per-action details.
+    var validation = {
+        login: {
+            rules: {
+                'password': {
+                    required: true
+                }
+            }
+        },
+        'password_reset': {
+            rules: {
+                'password': {
+                    required: true
+                }
+            }
+        },
+        'session_expired': {
+             rules: {
+                 'password': {
+                     required: true
+                 }
+             }
+        },
+        register: {
+            rules: {
+                'first-name': {
+                    required: true
+                },
+                'last-name': {
+                    required: true
+                },
+                username: {
+                    required: true,
+                    minlength: ore_data.un_min,
+                    remote: {
+                        url: ore_data.ajaxurl,
+                        type: 'POST',
+                        data: {
+                            username: function() {
+                                LOG('in username validation!');
+                                return $('#username').val();
+                            },
+                            'action': 'ore_username_check'
+                        }
+                    }
+                },
+                'display-name': {
+                    required: true,
+                    minlength: ore_data.dn_min
+                },
+                password: {
+                    required: true,
+                    minlength: ore_data.pw_min
+                },
+                'confirm-password': {
+                    required: true,
+                    minlength: ore_data.pw_min,
+                    equalTo: '#password'
+                },
+                email: {
+                    required: true,
+                    email: true,
+                    remote: {
+                        url: ore_data.ajaxurl,
+                        type: 'POST',
+                        data: {
+                            email: function() {
+                                LOG('in email validation!');
+                                return $('#email').val();
+                            },
+                            'action': 'ore_email_check'
+                        }
+                    }
+                },
+                country: {
+                   required: true
+                }
+            },
+            messages: {
+                'first-name': {
+                    required: 'We require you specify your first or given name.'
+                },
+                'last-name': {
+                    required: 'We require you specify your last or family name.'
+                },
+                username: {
+                    required: 'You must enter a username. It must be at least '+ore_data.un_min+' characters long.'
+                },
+                'display-name': {
+                    required: 'You must supply a display name - it can be a nickname - this will be shown publicly alongside any of your posts. Your Display Name must be at least '+ore_data.dn_min+' characters long.'
+                },
+                password: {
+                    required: 'You must enter a password',
+                    minlength: 'Your password must be at least '+ore_data.pw_min+' characters long.'
+                },
+                'confirm-password': {
+                    required: 'You must enter a password confirmation',
+                    minlength: 'Your password must be at least '+ore_data.pw_min+' characters long',
+                    equalTo: 'Your confirmation is different from your password. They must be the same. Please try re-entering one or both.'
+                },
+                email: {
+                    required: 'You must enter a valid email',
+                    unique: 'Each user email must be unique. No two accounts can share the same email address.'
+                },
+                country: {
+                    required: 'You must select the country with which you most closely associate.'
+                }
+            }
+          },
+          'edit_profile': {
+              rules: {
+                  'first-name': {
+                      required: true
+                  },
+                  'last-name': {
+                      required: true
+                  },
+                  'display-name': {
+                      required: true,
+                      minlength: 6
+                  },
+                  email: {
+                      required: true,
+                      email: true,
+                      remote: {
+                          url: ore_data.ajaxurl,
+                          type: 'POST',
+                          data: {
+                              email: function() {
+                                  LOG('in email validation!');
+                                  return $('#email').val();
+                              },
+                              'action': 'ore_email_check'
+                          }
+                      }
+                  },
+                  country: {
+                     required: true
+                  }
+              },
+              messages: {
+                  'first-name': {
+                      required: 'We require you specify your first or given name.'
+                  },
+                  'last-name': {
+                      required: 'We require you specify your last or family name.'
+                  },
+                  'display-name': {
+                      required: 'You must supply a display name - it can be a nickname - this will be shown publicly alongside any of your posts. Your Display Name must be at least '+ore_data.dn_min+' characters long.'
+                  },
+                  email: {
+                      required: 'You must enter a valid email',
+                      unique: 'Each user email must be unique. No two accounts can share the same email address.'
+                  },
+                  country: {
+                      required: 'You must select the country with which you most closely associate.'
+                  }
+              }
+          },
+          'update_password': {
+              rules: {
+                  'current-password': {
+                      required: true
+                  },
+                  'new-password': {
+                      required: true,
+                      minlength: ore_data.pw_min
+                  },
+                  'confirm-password': {
+                      required: true,
+                      minlength: ore_data.pw_min,
+                      equalTo: '#password'
+                  },
+              },
+              messages: {
+                  'current-password': {
+                      required: "You must enter your current password - this is a security precaution. If you don't know it, please do a <button id='ore-password-reset-auxillary-button' class='link ore-button'>Password Reset</button> instead."
+                  },
+                  'new-password': {
+                      required: 'You must enter a password',
+                      minlength: 'Your password must be at least '+ore_data.pw_min+' characters long'
+                  },
+                  'confirm-password': {
+                      required: 'You must enter a password confirmation',
+                      minlength: 'Your password must be at least '+ore_data.pw_min+' characters long',
+                      equalTo: 'Your confirmation is different from your password. They must be the same. Please try re-entering one or both.'
+                  }
+              }
+          }
+     };
+     // apply a set of rules to each form
+     function set_validation_details(form, details) {
+         //form = get_current_form();
+         LOG('validating rules and messages for form: ', form);
+         //form.validationEngine();
+         form.validate(details);
+     }
+/*     function is_form_valid(id) {
+         form = get_current_form();
+         LOG('validating form...', form);
+         if (form.valid()) {
+             LOG('form is valid!');
+             return true;
+         } else {
+             LOG('form is NOT valid!');
+             return false;
+         }
+         return true;
+     }
+     function get_current_form() {
+         form = $(form_container).find('.ore-form');
+         if (form.length == 1) {
+             LOG('found exactly 1 form...', form[0]);
+             return form[0];
+         } else if (form.length > 1) {
+             LOG('found too many forms!');
+             return form[0];
+         } else {
+             LOG('didn\'t find any forms!');
+             return false;
+         }
+     }*/
+     /*function set_validator_defaults(object) {
+         LOG('setting validator defaults on ', object);
+         object.validator.setDefaults({
+             debug: true,
+             success: "valid",
+             submitHandler: function (form) {
+                 LOG('******* in submit handler for ', form);
+             }
+         });
+     }*/
+   /*
+    * End of validation
+    */
+
      /*
      * Modal dialogue stuff
      */
@@ -273,9 +519,9 @@ jQuery(document).ready(function() {
                  clear_hash();
              //} else if (modal_events(action_from_id(e.target.id), e.target.id, ore_data)) {
              } else if (modal_events(id)) {
-                 LOG('modal event handled');
+                 LOG('modal event handled: ', id);
                  // we can hide the modal...
-                 close_modal();
+                 //close_modal();
                  // Todo - show the appropriate response modal...
              } else {
                  LOG('unknown modal event');
@@ -305,6 +551,8 @@ jQuery(document).ready(function() {
              close_modal();
              // clear any existing hashes
              clear_hash();
+             // set the hash for the current modal
+             set_hash(id);
              // show a the new modal
              form_markup = modals[id].markup;
              LOG('Launch ', id);
@@ -315,26 +563,29 @@ jQuery(document).ready(function() {
                  form_markup = add_countries(form_markup, ore_data.country_select);
              }
              LOG('appending form to parent');
+             // at this point, the form should appear!
              // here form is a DOM node...
-             form = $(form_parent).append(form_markup);
+             //form = $(form_parent).append(form_markup);
+             form = $('#ore-container').append(form_markup);
              if (id == 'edit_profile' || id == 'register') {
+                 LOG('Setting the country');
                  set_country(form, user.country);
-                 // enable validation
-                 forms = form.find(form_class);
-                 LOG('forms found: '+forms.length);
-                 forms.each(function() {
-                     LOG('setting rules');
-                     if (validation.hasOwnProperty[id]) {
-                         validation_rules(validation[id]);
-                     }
-                 });
-                 //validation_rules(form);
-                 //$(form_container).find('#ore-country').val(user.country);
-                 //LOG('finished adding and setting country to ', $(form_container).find('#ore-country').val());
              }
+             // enable validation
+             forms = form.find(form_class);
+             LOG('forms found: '+forms.length);
+             forms.each(function() {
+                 LOG('setting rules and messages', validation[id]);
+                 LOG('we have validation settings for '+ id);
+                 LOG('applying to this form: ', $(this));
+                 var validation_details = Object.assign({}, validation_defaults, validation[id]);
+                 LOG('setting rules and messaging to ', validation_details);
+                 $(this).validate(validation_details);
+             });
              // set the "current_modal" value...
              current_modal = id;
              LOG('modal '+current_modal+' should be visible...');
+             return true;
          } else {
              LOG('click within menu isn\'t on a known button');
              return false;
@@ -362,33 +613,11 @@ jQuery(document).ready(function() {
              LOG('Hide '+current_modal+' and show '+action);
              show_modal(action);
          } else {
-             if (action == 'register') {
-                 LOG('Register!');
-                 special_data = get_form_values();
-             } else if (action == 'login') {
-                 LOG('Login!');
-                 special_data = get_form_values();
-             } else if (action == 'password_reset') {
-                 LOG('Reset Password!');
-                 special_data = get_form_values();
+             special_data = get_form_values();
+             LOG('processing requested action: ', action);
+             if (action == 'password_reset' || action == 'update_password') {
                  special_data['user_id'] = ore_data.user.user_id;
-             } else if (action == 'edit_profile') {
-                 LOG('Save Profile!');
-                 special_data = get_form_values();
-                 special_data['user_id'] = ore_data.user.user_id;
-             } else if (action == 'update_password') {
-                 LOG('Update Password!');
-                 special_data = get_form_values();
-                 special_data['user_id'] = ore_data.user.user_id;
-             } else if (action == 'enrol') {
-                 LOG('Enrol!');
-                 special_data = {
-                     'user_id': ore_data.user.user_id,
-                     'course_id': ore_data.user.course.course_id,
-                     'course_tag': ore_data.user.course.course_tag
-                 };
-             } else if (action == 'leave') {
-                 LOG('Leave!');
+             } else if (action == 'enrol' || action == 'leave') {
                  special_data = {
                      'user_id': ore_data.user.user_id,
                      'course_id': ore_data.user.course.course_id,
@@ -396,57 +625,49 @@ jQuery(document).ready(function() {
                  };
              // informational modals, if OK is clicked, just close them
              } else if (action == 'successful_login' ||
-     //            action == 'successful_reset' ||
-     //            action == 'successful_registration' ||
-     //            action == 'profile_saved' ||
-     //            action == 'profile_save_failed' ||
                  action == 'successfully_enrolled' ||
-     //            action == 'failed_to_enrol' ||
                  action == 'successfully_unenrolled') {
                  LOG('closing informational modal: '+action);
                  close_modal();
-                 LOG('reloading');
-                 reload();
+                 //LOG('reloading');
+                 //reload();
                  return true;
              } else {
                  // unless we get to a requested action that's not catered for here,
                  // in which case, bail, and say something!
-                 LOG('Not a configured button');
+                 LOG('Not a configured button, but closing any open modals anyway...');
+                 close_modal();
                  return false;
-             }
-             // check form validation
-             if (validation.hasOwnProperty(action)) {
-                 LOG('checking if form ('+action+') is valid.');
-                 if (!is_form_valid()) {
-                     LOG('form isn\'t valid');
-                     return false;
-                 }
              }
              // process the ajax call...
              if (ajax_submit(action, special_data)) {
-                     LOG('completed ajax call for', action);
+                 LOG('completed ajax call for', action);
                  // check if a new hash has been specified by the submit, and act on it!
                  check_hash(window.location.hash);
              } else {
                  LOG('failed to complete ajax call for', action);
              }
          }
+         LOG('Modal_events returning "true"');
          return true;
      }
      // get the values from a form
      function get_form_values() {
          form = $(form_container).find('.ore-form');
-         var value = {};
-         LOG('found ', form);
+         var values = {};
+         LOG('get_form_values - found ', form);
          $(form).each(function() {
              inputs = $(this).find(':input');
              LOG('found '+inputs.length+' inputs');
-             inputs.each(function(i, obj) {
-                 LOG(obj.id+': '+obj.value);
-                 value[obj.id] = obj.value;
+             inputs.each(function(index, value) {
+                 LOG(index+': ', value);
+                 if (value.id) {
+                     values[value.id] = value.value;
+                 }
              });
+             LOG('got values: ', values);
          });
-         return value;
+         return values;
      }
      // process ajax requests returning data to the server
      // and displaying error/status messages where relevant
@@ -468,56 +689,31 @@ jQuery(document).ready(function() {
                  // handle post submission stuff
                  // if it was successful, do other stuff
                  if (data.hasOwnProperty('success')) {
-                     if (action == 'register') {
-                         LOG('Registered successfully!');
-                         set_hash('successful_registration');
-                     } else if (action == 'login') {
-                         LOG('Logged in! Reloading page');
-                         reload("successful_login");
-                     } else if (action == 'password_reset') {
-                         LOG('Resetting password');
-                         set_hash("successful_reset");
-                     } else if (action == 'edit_profile') {
-                         LOG('Save Profile!');
-                         set_hash('profile_saved');
-                     } else if (action == 'update_password') {
-                         LOG('Password Updated!');
-                         set_hash('password_updated');
-                     } else if (action == 'enrol') {
-                         LOG('Successfully enrolled!');
-                         set_hash('successfully_enrolled');
-                     } else if (action == 'leave') {
-                         LOG('Successfully unenrolled!');
-                         set_hash('successfully_unenrolled');
+                     LOG('Succeeded: ', action);
+                     // setting hash to the "failed" result from the action
+                     if (ore_data.modals[action].default.success != null) {
+                         set_hash(ore_data.modals[action].default.success);
+                     }
+                     // do special stuff for changes that have an impact on what
+                     // the user is allowed to see on the site...
+                     if (action == 'login' || action == 'enrol' || action == 'leave') {
+                         LOG('Reloading page for completed action: ', action);
+                         reload(ore_data.modals[action].default.success);
                      } else {
                          LOG('nothing to do for action: '+action);
                      }
                  } else if (data.hasOwnProperty('failed')) { // if it failed, show error info
                      //LOG('wrapper html: ', wrapper.val());
-                     if (action == 'register') {
-                         LOG('Failed to Register!');
-                         set_hash('failed_registration');
-                     } else if (action == 'login') {
-                         LOG('Log in failed!');
-                         set_hash("failed_login");
-                     } else if (action == 'password_reset') {
-                         LOG('Failed to reset password');
-                         set_hash('failed_reset');
-                     } else if (action == 'update_password') {
-                         LOG('Password Not Updated!');
-                         set_hash('password_update_failed');
-                     } else if (action == 'edit_profile') {
-                         LOG('Profile Save Failed!');
-                         set_hash('profile_save_failed');
-                     } else if (action == 'password_updated') {
-                         LOG('Password Update Failed!');
-                         set_hash('password_update_failed');
-                     } else if (action == 'enrol') {
-                         LOG('Failed to enrol!');
-                         set_hash('failed_to_enrol');
+                     LOG('Failed: ', action);
+                     // setting hash to the "failed" result from the action
+                     if (ore_data.modals[action].default.failed != null) {
+                         LOG('setting hash to #'+ore_data.modals[action].default.failed)
+                         set_hash('#'+ore_data.modals[action].default.failed);
                      } else {
                          LOG('nothing to do for action: '+action);
                      }
+                 } else {
+                     LOG('this data has neither success nor failed');
                  }
                  check_hash(window.location.hash);
                  if (data.hasOwnProperty('failed')) {
@@ -574,12 +770,12 @@ jQuery(document).ready(function() {
      function show_errors(errors) {
          error_msg = "";
          if (errors.length > 0) {
-             error_msg += '<div class="ore-errors"><h2>Errors</h2><ol class="ore-errors">';
+             error_msg += '<div class="ore-errors"><h2>Errors</h2><ul class="ore-errors">';
              LOG('there are '+errors.length+' errors to report');
              errors.forEach(function(value, key) {
                  error_msg += '<li>'+value+'</li>';
              });
-             error_msg += '</ol></div>';
+             error_msg += '</ul></div>';
          } else {
              LOG('no errors to report!');
          }
@@ -649,182 +845,11 @@ jQuery(document).ready(function() {
      /*
       * End hash stuff
       */
-      /*
-       * form validation, e.g. uniqueness of username and email
-       */
-      var validation = {
-           login: {
-
-           },
-           password_reset: {
-
-           },
-           register: {
-               rules: {
-                   'first-name': {
-                       required: true
-                   },
-                   'last-name': {
-                       required: true
-                   },
-                   'username': {
-                       required: true,
-                       remote: {
-                           url: ore_data.ajaxurl,
-                           type: 'POST',
-                           data: {
-                               'username': function() {
-                                   LOG('in username validation!');
-                                   return $('#username').val();
-                               },
-                               'action': 'ore_username_check'
-                          }
-                       }
-                   },
-                   'display-name': {
-                       required: true
-                   },
-                   'password': {
-                       required: true
-                   },
-                   'confirm-password': {
-                       required: true
-                   },
-                   'email': {
-                       required: true,
-                       email: true,
-                       remote: {
-                           url: ore_data.ajaxurl,
-                           type: 'POST',
-                           data: {
-                               'email': function() {
-                                   LOG('in email validation!');
-                                   return $('#email').val();
-                               },
-                               'action': 'ore_email_check'
-                          }
-                       }
-                   },
-                   'ore-country': {
-                       required: true
-                   }
-               },
-               messages: {
-                   'email': {
-                       required: "You must enter a valid email",
-                       unique: "Each user email must be unique. No two accounts can share the same email address."
-                   }
-               }
-           },
-           edit_profile: {
-               rules: {
-                   'first-name': {
-                       required: true
-                   },
-                   'last-name': {
-                       required: true
-                   },
-                   'display-name': {
-                       required: true
-                   },
-                   'email': {
-                       required: true,
-                       email: true,
-                       remote: {
-                           url: ore_data.ajaxurl,
-                           type: 'POST',
-                           data: {
-                               'email': function() {
-                                   LOG('in email validation!');
-                                   return $('#email').val();
-                               },
-                               'action': 'ore_email_check'
-                          }
-                       }
-                   },
-                   'ore-country': {
-                       required: true
-                   }
-               },
-               messages: {
-                   'email': {
-                       required: "You must enter a valid email",
-                       unique: "Each user email must be unique. No two accounts can share the same email address."
-                   }
-               }
-           },
-           update_password: {
-               rules: {
-                   'current-password': {
-                       required: true
-                   },
-                   'new-password': {
-                       required: true
-                   },
-                   'confirm-password': {
-                       required: true
-                   }
-               },
-               messages: {
-                   'current-password': {
-                       required: "You must enter your current password - this is a security precaution. If you don't know it, please do a <span id='ore-password-reset-auxillary-button' class='link ore-button'>Password Reset</span> instead."
-                   }
-               }
-           },
-           session_expired: {
-                rules: {
-                    'password': {
-                        required: true
-                    }
-                }
-           }
-      };
-      // apply a set of rules to each form
-      function validation_rules(rules) {
-          form = get_current_form();
-          LOG('validating rules for form: ', form);
-          //form.validationEngine();
-          form.validate(rules);
-      }
-      function is_form_valid(id) {
-          form = get_current_form();
-          LOG('validating form...', form);
-          if (form.valid()) {
-              LOG('form is valid!');
-              return true;
-          } else {
-              LOG('form is NOT valid!');
-              return false;
-          }
-      }
-      function get_current_form() {
-          form = $(form_container).find('.ore-form');
-          if (form.length == 1) {
-              LOG('found exactly 1 form...', form[0]);
-              return form[0];
-          } else if (form.length > 1) {
-              LOG('found too many forms!');
-              return form[0];
-          } else {
-              LOG('didn\'t find any forms!');
-              return false;
-          }
-      }
-      function set_validator_defaults() {
-          LOG('setting validator defaults');
-          $.validator.setDefaults({
-              debug: true,
-              success: "valid"
-          });
-      }
-    /*
-     * End of validation
-     */
     /*
      * Initial actions on first load...
      */
     check_hash(current_hash);
-    set_validator_defaults();
+    //set_validator_defaults();
     // run the user status when the page loads
     // if the user is logged in, create the authenticated menu
     // if not, the login/register menu for a visitor

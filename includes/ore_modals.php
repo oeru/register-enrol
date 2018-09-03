@@ -22,12 +22,12 @@ static $modals = array(
         'token' => 'login',
         'markup' => '<div class="form-group">'.
                 '<label for="credential">Username or Email</label>'.
-                '<input type="text" class="form-control" id="credential" placeholder="username or user@email" aria-describedby="helpCredential">'.
+                '<input type="text" class="form-control" id="credential" name="credential" placeholder="username or user@email" aria-describedby="helpCredential">'.
                 '<span id="helpCredential" class="help-block">Either is acceptable, because both uniquely identify you in this system.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
-                '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
+                '<input type="password" class="form-control" id="password" name="password" aria-describedby="helpPassword">'.
                 '<span id="helpPassword" class="help-block">Make sure no one is watching as you type this.<br/><br/>Problems? You can do a <span id="ore-password-reset-auxillary-button" class="link ore-button">Password Reset</span><br/><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
       	    '</div>',
         'default' => array(
@@ -71,7 +71,7 @@ static $modals = array(
         'markup' => '<p>If you have forgotten your password, you can request a reset. We will need to know the email address you used to register or your username.</p>'.
         '<div class="form-group">'.
             '<label for="password">Enter your Username or Email to identify yourself.</label>'.
-            '<input type="text" class="form-control" id="credential" placeholder="username or user@email" value="{email}" aria-describedby="helpCredential">'.
+            '<input type="password" class="form-control" id="credential" name="credential" placeholder="username or user@email" value="{email}" aria-describedby="helpCredential">'.
             '<span id="helpCredential" class="help-block">Either is acceptable, because both uniquely identify you in this system.</span>'.
         '</div>',
         'default' => array(
@@ -117,33 +117,34 @@ static $modals = array(
         'token' => 'register',
         'markup' => '<div class="form-group">'.
                 '<label for="firstname">First Name</label>'.
-                '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName">'.
+                '<input type="text" class="form-control" id="first-name" name="first-name" placeholder="your first name" aria-describedby="helpFirstName">'.
                 '<span id="helpFirstName" class="help-block">Your first or given name(s) as you would like it(them) displayed.</span>'.
                 '<label for="lastname">Last Name</label>'.
-                '<input type="text" class="form-control" id="last-name" placeholder="your last name" aria-describedby="helpLastName">'.
+                '<input type="text" class="form-control" id="last-name" name="last-name" placeholder="your last name" aria-describedby="helpLastName">'.
                 '<span id="helpLastName" class="help-block">Your last or family name(s) as you would like it(them) displayed.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="username">Username</label>'.
-                '<input type="text" class="form-control" id="username" placeholder="username" aria-describedby="helpUsername">'.
-                '<span id="helpUsername" class="help-block">Your preferred username. Allowed letters: a-z0-9_-. Spaces and other special characters not allowed. Please note: this username can only be altered by an administrator after it is created, so please choose wisely.</span>'.
+                '<input type="text" class="form-control" id="username" name="username" placeholder="username" aria-describedby="helpUsername">'.
+                '<span id="helpUsername" class="help-block">Your preferred username. Allowed letters: a-z0-9_-. Spaces and other special characters not allowed. It must be unique in this OERu system. Please note: this username can only be altered by an administrator after it is created, so please choose wisely.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="display-name">Display Name</label>'.
-                '<input type="text" class="form-control" id="display-name" placeholder="Ms Sue Smith" aria-describedby="helpDisplayName">'.
+                '<input type="text" class="form-control" id="display-name" name="display-name" placeholder="Ms Sue Smith" aria-describedby="helpDisplayName">'.
                 '<span id="helpDisplayName" class="help-block">Your publicly visible name or preferred nickname.</span>'.
           	'</div>'.
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
-                '<input type="password" class="form-control" id="password" aria-describedby="helpPassword">'.
+                '<input type="password" class="form-control" id="password" name="password" aria-describedby="helpPassword">'.
                 '<span id="helpPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols.</span>'.
                 '<label for="confirm-password">Confirm password</label>'.
-                '<input type="password" class="form-control" id="confirm-password" aria-describedby="helpConfirmPassword">'.
+                '<input type="password" class="form-control" id="confirm-password" name="confirm-password" aria-describedby="helpConfirmPassword">'.
                 '<span id="helpConfirmPassword" class="help-block">This must be identical to the Password field.'.
           	'</div>'.
       		'<div class="form-group">'.
             	'<label for="email">Email</label>'.
-                '<input type="text" class="form-control" id="email" placeholder="me@example.com">'.
+                '<input type="email" class="form-control" id="email" name="email" placeholder="me@example.com" aria-describedby="helpEmail">'.
+                '<span id="helpEmail" class="help-block">Your full email address (must include an "@"). It must be unique in this OERu system.</span>'.
           	'</div>'.
         	'<div class="form-group">'.
                 '<label for="usercountry">Country of origin</label>'.
@@ -190,20 +191,21 @@ static $modals = array(
         'token' => 'edit-profile',
         'markup' => '<div class="form-group">'.
                 '<label for="firstname">First Name</label>'.
-                '<input type="text" class="form-control" id="first-name" placeholder="your first name" aria-describedby="helpFirstName" value="{first_name}">'.
+                '<input type="text" class="form-control" id="first-name" name="first-name" placeholder="your first name" aria-describedby="helpFirstName" value="{first_name}">'.
                 '<span id="helpFirstName" class="help-block">Your first or given name(s) as you would like it(them) displayed.</span>'.
                 '<label for="lastname">Last Name</label>'.
-                '<input type="text" class="form-control" id="last-name" placeholder="your last name" aria-describedby="helpLastName" value="{last_name}">'.
+                '<input type="text" class="form-control" id="last-name" name="last-name" placeholder="your last name" aria-describedby="helpLastName" value="{last_name}">'.
                 '<span id="helpLastName" class="help-block">Your last or family name(s) as you would like it(them) displayed.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="display-name">Display Name</label>'.
-                '<input type="text" class="form-control" id="display-name" placeholder="Ms Sue Smith" aria-describedby="helpDisplayName" value="{display_name}">'.
+                '<input type="text" class="form-control" id="display-name" name="display-name" placeholder="Ms Sue Smith" aria-describedby="helpDisplayName" value="{display_name}">'.
                 '<span id="helpDisplayName" class="help-block">Your publicly visible name or preferred nickname.</span>'.
           	'</div>'.
       		'<div class="form-group">'.
             	'<label for="email">Email</label>'.
-                '<input type="text" class="form-control" id="email" name="email" placeholder="me@example.com" value="{email}">'.
+                '<input type="text" class="form-control" id="email" name="email" placeholder="me@example.com" value="{email}" aria-describedby="helpEmail">'.
+                '<span id="helpEmail" class="help-block">Your full email address (must include an "@"). It must be unique in this OERu system.</span>'.
           	'</div>'.
         	'<div class="form-group">'.
                 '<label for="usercountry">Country of origin</label>'.
@@ -247,15 +249,15 @@ static $modals = array(
         'token' => 'update-password',
         'markup' => '<div class="form-group">'.
                 '<label for="current-password">Current Password</label>'.
-                '<input type="password" class="form-control" id="current-password" aria-describedby="helpCurrentPassword">'.
+                '<input type="password" class="form-control" id="current-password" name="current-password" aria-describedby="helpCurrentPassword">'.
                 '<span id="helpCurrentPassword" class="help-block">Your current password, so that we can ensure you\'re you!<br/>If you can\'t remember your password, you can instead do a <span id="ore-password-reset-auxillary-button" class="link ore-button">Password Reset</span><br/>(The OERu encourages you to use "password manager" software to store your passwords and help you create a strong and unique one for each website!)</span>'.
           	'</div>'.
             '<div class="form-group">'.
                 '<label for="new-password">New Password</label>'.
-                '<input type="password" class="form-control" id="new-password" aria-describedby="helpNewPassword">'.
+                '<input type="password" class="form-control" id="new-password" name="new-password" aria-describedby="helpNewPassword">'.
                 '<span id="helpNewPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols.</span>'.
                 '<label for="confirm-password">Confirm New Password</label>'.
-                '<input type="password" class="form-control" id="confirm-password" aria-describedby="helpConfirmPassword">'.
+                '<input type="password" class="form-control" id="confirm-password" name="confirm-password" aria-describedby="helpConfirmPassword">'.
                 '<span id="helpConfirmPassword" class="help-block">This must be identical to the New Password field.'.
           	'</div>',
          'default' => array(
@@ -268,7 +270,7 @@ static $modals = array(
          'alternative' => array(
              'label' => 'Cancel',
              'class' => 'cancel',
-             'detail' => 'Ignore this change. Leave your password unchanged.',
+             'detail' => 'Leave your password unchanged.',
          ),
     ),
     'password_updated' => array(
@@ -294,7 +296,7 @@ static $modals = array(
     'session_expired' => array(
         'title' => 'Session Exp',
         'markup' => '<p>Your session has timed out. To continue, you must renew your session by entering the password for user {username}.</p>'.
-            '<p class="password"><input id="password" class="password" value="" type="password">password</input></p>',
+            '<p class="password"><input id="password" name="password" class="password" type="password">password</input></p>',
         'token' => 'session-expired',
         'default' => array(
             'label' => 'Renew Session',
@@ -309,7 +311,7 @@ static $modals = array(
         'default' => array(
             'label' => 'Enrol',
             'class' => 'submit',
-            'detail' => 'Once enrolled, have no fear: you can leave the course any time you like.',
+            'detail' => 'Please note: <strong>by enrolling in this course, you are opt-in to receiving course instructions via email</strong>. Once enrolled, have no fear: you can leave the course any time you like.',
             'success' => 'successfully_enrolled',
             'failed' => 'failed_to_enrol',
         ),
@@ -330,7 +332,7 @@ static $modals = array(
     'failed_to_enrol' => array(
         'title' => 'Enrollment in "{course_title}" ({course_tag}) failed.',
         'markup' => '<p>It is not clear why your enrollment attempt failed - please <a href="ORE_CONTACT_URL">contact OERu</a> to report this problem.',
-        'token' => 'failed-login',
+        'token' => 'failed-to-enrol',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',
@@ -354,6 +356,15 @@ static $modals = array(
         'title' => 'Successfully unenrolled from "{course_title}" ({course_tag})',
         'token' => 'successfully-unenrolled',
         'markup' => '<p>You have successfully removed your user, {display_name} ({username}).</p>',
+        'default' => array(
+            'label' => 'Ok',
+            'class' => 'submit',
+        ),
+    ),
+    'failed_to_unenrol' => array(
+        'title' => 'Unenrolling you from "{course_title}" ({course_tag}) failed.',
+        'markup' => '<p>It is not clear why your unenrollment attempt failed - please <a href="ORE_CONTACT_URL">contact OERu</a> to report this problem.',
+        'token' => 'failed-to-unenrol',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',

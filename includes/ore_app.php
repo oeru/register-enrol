@@ -33,7 +33,8 @@ class OREMain extends OREBase {
         // jsquery validate script
         wp_register_script(
             'jquery-validate',
-            'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js',
+            //'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js',
+            ORE_URL.'js/jquery.validate.js',
             array('jquery'), true
         );
         wp_enqueue_script(ORE_SCRIPT, ORE_URL.'js/ore_script.js', array(
@@ -45,6 +46,9 @@ class OREMain extends OREBase {
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_submit' => wp_create_nonce('ore-submit-nonce'),
             'container' => ORE_CONTAINER,
+            'pw_min' => ORE_MIN_PASSWORD_LENGTH,
+            'dn_min' => ORE_MIN_DISPLAY_NAME_LENGTH,
+            'un_min' => ORE_MIN_USERNAME_LENGTH,
             'login_status' => ORE_LOGIN_STATUS,
             'user' => $user_array,
             'modals' => $this->get_modals(),
@@ -62,8 +66,8 @@ class OREMain extends OREBase {
         // add the ajax handlers
         // this enables the register-enrol service for authenticated users...
         add_action('wp_ajax_ore_submit', array($this, 'ajax_submit'));
-        add_action('wp_ajax_ore_emailcheck', array($this, 'ajax_email_check'));
-        add_action('wp_ajax_ore_usernamecheck', array($this, 'ajax_username_check'));
+        add_action('wp_ajax_ore_email_check', array($this, 'ajax_email_check'));
+        add_action('wp_ajax_ore_username_check', array($this, 'ajax_username_check'));
         // and, just as importantly, unauthenticated users...
         add_action('wp_ajax_nopriv_ore_submit', array($this, 'ajax_submit'));
         add_action('wp_ajax_nopriv_ore_email_check', array($this, 'ajax_email_check'));
@@ -432,16 +436,16 @@ class OREMain extends OREBase {
         $dialogs = array();
         foreach($modals as $index => $val) {
             $markup = '<div id="ore-modal-'.$val['token'].'" class="ore-modal modal fade">';
-            $markup .= '<div class="modal-dialog"><div class="modal-content">';
+            $markup .= '<div class="modal-dialog"><form class="ore-form modal-body ore-body"><fieldset class="modal-content">';
             if (isset($val['title'])) {
                 //$this->log('getting the modal: "'.$val['title'].'"');
                 $markup .= '<div class="modal-header">';
                 $markup .= '<button class="close" type="button" data-dismiss="modal" aria-label="Close"><span class="close" aria-hidden="true" title="This will close this window, and any changes will be lost...">x</span></button>';
-                $markup .= '<h1 class="ore-title">'.$val['title'].'</h1>';
+                $markup .= '<legend class="ore-title">'.$val['title'].'</legend>';
                 $markup .= '</div><!-- modal-header -->';
             }
             if (isset($val['markup'])) {
-                $markup .= '<form class="ore-form modal-body ore-body">'.$val['markup'].'</form>';
+                $markup .= $val['markup'];
             }
             $button_classes = 'button ore-button';
             $both = (is_array($val['default']) && is_array($val['alternative'])) ? true : false;
@@ -459,8 +463,8 @@ class OREMain extends OREBase {
                     } else {
                         $id = 'ore-'.$val['token'].'-default-action';
                     }
-                    $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
-                        $default['label'].'</span>';
+                    $markup .= '<button id="'.$id.'" name="'.$name.'" class="'.$classes.'" type="submit">'.
+                        $default['label'].'</button>';
                     //unset($default['label']);
                     if (isset($default['detail'])) {
                         //$markup .= '<p class="ore-detail">'._e($default['detail']).'</p>';
@@ -484,8 +488,8 @@ class OREMain extends OREBase {
                         } else {
                             $id = 'ore-'.$val['token'].'-alternative-action';
                         }
-                        $markup .= '<span id="'.$id.'" name="'.$name.'" class="'.$classes.'">'.
-                            $alt['label'].'</span>';
+                        $markup .= '<button id="'.$id.'" name="'.$name.'" class="'.$classes.'" type="button">'.
+                            $alt['label'].'</button>';
                         //unset($alt['label']);
                         if (isset($alt['detail'])) {
                             //$markup .= '<p class="ore-detail">'._e($alt['detail']).'</p>';
@@ -498,7 +502,7 @@ class OREMain extends OREBase {
                 }
                 $markup .= '</div><!-- modal-footer -->';
             }
-            $markup .= '</div><!-- modal-content --></div><!-- modal-dialog --></div><!-- ore-modal -->';
+            $markup .= '</fieldset><!-- modal-content --></form><!--form--></div><!-- modal-dialog --></div><!-- ore-modal -->';
             $dialogs[$index]['markup'] = $markup;
             //$this->log('dialog['.$index.']: '.print_r($dialogs[$index], true));
         }

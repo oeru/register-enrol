@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-define( 'ORE_VERSION', '0.0.1' );
+define( 'ORE_VERSION', '0.0.3' );
 // plugin computer name
 define('ORE_NAME', 'ORE');
 // current version
@@ -70,6 +70,9 @@ define('ORE_ADMIN_MENU', 'ORE Settings');*/
 // turn on debugging with true, off with false
 define('ORE_DEBUG', true);
 define('LOG_STREAM', getenv('LOG_STREAM'));
+define('ORE_MIN_PASSWORD_LENGTH', 8);
+define('ORE_MIN_USERNAME_LENGTH', 6);
+define('ORE_MIN_DISPLAY_NAME_LENGTH', 6);
 
 // include the dependencies
 require ORE_PATH . 'includes/ore_app.php';

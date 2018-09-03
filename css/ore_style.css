@@ -57,6 +57,7 @@ article.ore-form .container .entry-content > div.ore {
     box-shadow: 2px 2px 10px #AAA;
     text-transform: none;
     text-decoration: none;
+    border: none;
 }
 #ore-container .button:hover {
     /*color: #000;*/
@@ -183,7 +184,7 @@ article.ore-form .container .entry-content > div.ore {
     border-radius: 10px;
     /*margin-top: 20px;*/
     margin-top: 240px;
-    padding: 0 6px;
+    padding: 0 20px;
     box-shadow: 0 5px 15px rgb(0,0,0,0.5);
 }
 #ore-container .ore-modal {
@@ -206,10 +207,17 @@ article.ore-form .container .entry-content > div.ore {
     /*opacity: 1.0;*/
     background-color: #fefefe;
 }
-#ore-container .ore-modal.modal h1 {
+#ore-container .ore-modal.modal .ore-title {
     color: #000;
     font-size: 20px;
     margin: 20px 0 0 0;
+    border-bottom: none;
+}
+#ore-container .modal-header {
+    /*border-bottom: none;*/
+    margin-bottom: 12px;
+    padding-left: 0px;
+    padding-right: 0px;
 }
 #ore-container .ore-modal-block p { padding: 0px 20px; }
 #ore-container .ore-modal.modal p { color: #000; }
@@ -230,9 +238,11 @@ article.ore-form .container .entry-content > div.ore {
     margin-bottom: 0.2em;
 }
 #ore-error-wrapper ol {
-    list-style: none;
+    list-style: decimal;
+    list-style-type: decimal;
 }
 #ore-error-wrapper li {
     display: block;
-    list-style: none;
+    list-style: decimal;
+    list-style-type: decimal;
 }
