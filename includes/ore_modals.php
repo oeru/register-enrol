@@ -14,12 +14,15 @@
  * some forms can have alternative actions, e.g. someone going to the login
  * form might realise they want to go to a different 'destination'.
  * Each 'destination' is a the name of a dialog.
+ * 'auth' is whether the form is limited to those who are authenticated (logged in) - 'true' or not, 'false'
+ *
  *
  */
 static $modals = array(
     'login' => array(
         'title' => 'Log in to OERu Course site',
         'token' => 'login',
+        'auth' => false,
         'markup' => '<div class="form-group">'.
                 '<label for="credential">Username or Email</label>'.
                 '<input type="text" class="form-control" id="credential" name="credential" placeholder="username or user@email" aria-describedby="helpCredential">'.
@@ -47,6 +50,7 @@ static $modals = array(
     'successful_login' => array(
         'title' => 'Login successful',
         'token' => 'successful-login',
+        'purpose' => 'confirmation',
         'markup' => '<p>You have successfully logged in as {display_name} ({username}).</p>',
         'default' => array(
             'label' => 'Ok',
@@ -55,9 +59,10 @@ static $modals = array(
     ),
     'failed_login' => array(
         'title' => 'Login attempt failed',
+        'token' => 'failed-login',
+        'purpose' => 'confirmation',
         'markup' => '<p>You have entered an invalid email or password. Or, is it possible you have not yet registered?'.
             '<div id="ore-error-wrapper"></div>',
-        'token' => 'failed-login',
         'default' => array(
             'label' => 'Try again',
             'class' => 'submit',
@@ -68,10 +73,10 @@ static $modals = array(
     'password_reset' => array(
         'title' => 'Reset your password',
         'token' => 'password-reset',
-        'markup' => '<p>If you have forgotten your password, you can request a reset. We will need to know the email address you used to register or your username.</p>'.
+        'markup' => '<p>If you have forgotten your password, you can request a reset. We need to know <em>one</em> of the   following: (1) the email address you used to register, or (2) your username.</p>'.
         '<div class="form-group">'.
-            '<label for="password">Enter your Username or Email to identify yourself.</label>'.
-            '<input type="password" class="form-control" id="credential" name="credential" placeholder="username or user@email" value="{email}" aria-describedby="helpCredential">'.
+            '<label for="credential">Enter your Username or Email to identify yourself.</label>'.
+            '<input type="text" class="form-control" id="credential" name="credential" placeholder="username or user@email" value="{email}" aria-describedby="helpCredential">'.
             '<span id="helpCredential" class="help-block">Either is acceptable, because both uniquely identify you in this system.</span>'.
         '</div>',
         'default' => array(
@@ -85,6 +90,7 @@ static $modals = array(
     'successful_reset' => array(
         'title' => 'Password Reset Email Sent',
         'token' => 'successful-reset',
+        'purpose' => 'confirmation',
         'markup' => '<p>We have sent an email with a password reset link in it, so check your email.</p>'.
             '<p>Clicking that  link will allow you to set a new password</p>'.
             '<p>If you haven\'t received an email from us in 10-15 minutes, check your spam folder, but it could take as long as 30 minutes to get to you. If you don\'t get it at all, you can <a href="https://oeru.org/contact-us">contact us</a> for assistance.</p>'.
@@ -97,6 +103,7 @@ static $modals = array(
     'failed_reset' => array(
         'title' => 'Password Reset Failed',
         'token' => 'failed-reset',
+        'purpose' => 'confirmation',
         'markup' => '<p>We were not able to find a user with the details you have entered in our system.</p>'.
             '<p>Please check that you have typed in your chosen identifier - your username or email - correctly.</p>'.
             '<p>If it\'s possible you haven\'t previously registered an account with us, you can do that now.</p>',
@@ -115,6 +122,7 @@ static $modals = array(
     'register' => array(
         'title' => 'Register on the OERu Course site',
         'token' => 'register',
+        'auth' => false,
         'markup' => '<div class="form-group">'.
                 '<label for="firstname">First Name</label>'.
                 '<input type="text" class="form-control" id="first-name" name="first-name" placeholder="your first name" aria-describedby="helpFirstName">'.
@@ -168,6 +176,7 @@ static $modals = array(
     'successful_registration' => array(
         'title' => 'Registration successful',
         'token' => 'successful-login',
+        'purpose' => 'confirmation',
         'markup' => '<p>You have successfully registered a user called {display_name} with username {username}, and email {email}.</p>',
         'default' => array(
             'label' => 'Ok',
@@ -177,6 +186,7 @@ static $modals = array(
     'failed_registration' => array(
         'title' => 'Registration failed',
         'token' => 'failed-registration',
+        'purpose' => 'confirmation',
         'markup' => '<p>Failed to Register a new user</p>'.
             '<div id="ore-error-wrapper"></div>',
         'default' => array(
@@ -189,6 +199,7 @@ static $modals = array(
     'edit_profile' => array(
         'title' => 'Edit profile for user <strong>{username}</strong>',
         'token' => 'edit-profile',
+        'auth' => true,
         'markup' => '<div class="form-group">'.
                 '<label for="firstname">First Name</label>'.
                 '<input type="text" class="form-control" id="first-name" name="first-name" placeholder="your first name" aria-describedby="helpFirstName" value="{first_name}">'.
@@ -228,6 +239,7 @@ static $modals = array(
     'profile_saved' => array(
         'title' => 'Your profile (username <strong>{username}</strong>) has been saved',
         'token' => 'profile-saved',
+        'purpose' => 'confirmation',
         'markup' => '<p>Profile for {display_name} successfully updated.</p>',
         'default' => array(
             'label' => 'Ok',
@@ -237,6 +249,7 @@ static $modals = array(
     'profile_save_failed' => array(
         'title' => 'Your {username} profile was <strong>not</strong> saved',
         'token' => 'profile-saved',
+        'purpose' => 'confirmation',
         'markup' => '<p>Error: profile for {display_name} ({username}) not updated.</p>'.
         '<div id="ore-error-wrapper"></div>',
         'default' => array(
@@ -276,6 +289,7 @@ static $modals = array(
     'password_updated' => array(
         'title' => 'Your password has been updated',
         'token' => 'password-updated',
+        'purpose' => 'confirmation',
         'markup' => '<p>The password for {display_name} has been updated.</p>',
         'default' => array(
             'label' => 'Ok',
@@ -285,7 +299,7 @@ static $modals = array(
     'password_update_failed' => array(
         'title' => 'Your {username} password was <strong>not</strong> updated',
         'token' => 'password-update-failed',
-        //'markup' => '<p>Password for {display_name} <strong> {username} </strong> not updated.</p>'.
+        'purpose' => 'confirmation',
         'markup' => '<p>Password for <strong> {username} </strong> not updated.</p>'.
             '<div id="ore-error-wrapper">&nbsp;</div>',
         'default' => array(
@@ -306,8 +320,9 @@ static $modals = array(
     ),
     'enrol' => array(
         'title' => 'Enrol in this OERu Course',
-        'markup' => '<p>You can enrol in "{course_title}" ({course_tag}).</p>',
+        'auth' => true,
         'token' => 'enrol',
+        'markup' => '<p>You can enrol in "{course_title}" ({course_tag}).</p>',
         'default' => array(
             'label' => 'Enrol',
             'class' => 'submit',
@@ -323,6 +338,7 @@ static $modals = array(
     'successfully_enrolled' => array(
         'title' => 'Successfully enrolled in "{course_title}" ({course_tag})',
         'token' => 'successfully-enrolled',
+        'purpose' => 'confirmation',
         'markup' => '<p>You have successfully enrolled as {display_name} ({username}).</p>',
         'default' => array(
             'label' => 'Ok',
@@ -331,8 +347,9 @@ static $modals = array(
     ),
     'failed_to_enrol' => array(
         'title' => 'Enrollment in "{course_title}" ({course_tag}) failed.',
-        'markup' => '<p>It is not clear why your enrollment attempt failed - please <a href="ORE_CONTACT_URL">contact OERu</a> to report this problem.',
         'token' => 'failed-to-enrol',
+        'purpose' => 'confirmation',
+        'markup' => '<p>It is not clear why your enrollment attempt failed - please <a href="ORE_CONTACT_URL">contact OERu</a> to report this problem.',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',
@@ -340,8 +357,9 @@ static $modals = array(
     ),
     'leave' => array(
         'title' => 'Leave this OERu Course',
-        'markup' => '<p>You can leave this course, "{course_title}" without penalty. You can also rejoin in future if you like.</p>',
         'token' => 'leave',
+        'auth' => true,
+        'markup' => '<p>You can leave this course, "{course_title}" without penalty. You can also rejoin in future if you like.</p>',
         'default' => array(
             'label' => 'Unenrol',
             'class' => 'submit',
@@ -355,6 +373,7 @@ static $modals = array(
     'successfully_unenrolled' => array(
         'title' => 'Successfully unenrolled from "{course_title}" ({course_tag})',
         'token' => 'successfully-unenrolled',
+        'purpose' => 'confirmation',
         'markup' => '<p>You have successfully removed your user, {display_name} ({username}).</p>',
         'default' => array(
             'label' => 'Ok',
@@ -363,8 +382,9 @@ static $modals = array(
     ),
     'failed_to_unenrol' => array(
         'title' => 'Unenrolling you from "{course_title}" ({course_tag}) failed.',
-        'markup' => '<p>It is not clear why your unenrollment attempt failed - please <a href="ORE_CONTACT_URL">contact OERu</a> to report this problem.',
         'token' => 'failed-to-unenrol',
+        'purpose' => 'confirmation',
+        'markup' => '<p>It is not clear why your unenrollment attempt failed - please <a href="ORE_CONTACT_URL">contact OERu</a> to report this problem.',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',

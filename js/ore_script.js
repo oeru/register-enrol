@@ -11,7 +11,7 @@ jQuery(document).ready(function() {
      */
     var $ = jQuery;
     //var form = $(this);
-    var auth = false;
+    var authenticated = false;
     var form_container = '#'+ore_data.container;
     var form_parent = '#'+ore_data.login_status;
     var form_class = '.ore-form';
@@ -43,7 +43,7 @@ jQuery(document).ready(function() {
          user = ore_data.user;
          if (user.hasOwnProperty('user_id') && user.user_id != 0) {
              LOG('user is authenticated.');
-             auth = true;
+             authenticated = true;
              // if the user's logged in, set useful status details
              if (user.hasOwnProperty('display_name')) {
                  LOG('display_name', user.display_name);
@@ -332,6 +332,7 @@ jQuery(document).ready(function() {
                                 LOG('in email validation!');
                                 return $('#email').val();
                             },
+                            'current_email': '',
                             'action': 'ore_email_check'
                         }
                     }
@@ -394,6 +395,7 @@ jQuery(document).ready(function() {
                                   LOG('in email validation!');
                                   return $('#email').val();
                               },
+                              'current_email': ore_data.user.email,
                               'action': 'ore_email_check'
                           }
                       }
@@ -433,7 +435,7 @@ jQuery(document).ready(function() {
                   'confirm-password': {
                       required: true,
                       minlength: ore_data.pw_min,
-                      equalTo: '#password'
+                      equalTo: '#new-password'
                   },
               },
               messages: {
@@ -459,41 +461,6 @@ jQuery(document).ready(function() {
          //form.validationEngine();
          form.validate(details);
      }
-/*     function is_form_valid(id) {
-         form = get_current_form();
-         LOG('validating form...', form);
-         if (form.valid()) {
-             LOG('form is valid!');
-             return true;
-         } else {
-             LOG('form is NOT valid!');
-             return false;
-         }
-         return true;
-     }
-     function get_current_form() {
-         form = $(form_container).find('.ore-form');
-         if (form.length == 1) {
-             LOG('found exactly 1 form...', form[0]);
-             return form[0];
-         } else if (form.length > 1) {
-             LOG('found too many forms!');
-             return form[0];
-         } else {
-             LOG('didn\'t find any forms!');
-             return false;
-         }
-     }*/
-     /*function set_validator_defaults(object) {
-         LOG('setting validator defaults on ', object);
-         object.validator.setDefaults({
-             debug: true,
-             success: "valid",
-             submitHandler: function (form) {
-                 LOG('******* in submit handler for ', form);
-             }
-         });
-     }*/
    /*
     * End of validation
     */
@@ -548,25 +515,34 @@ jQuery(document).ready(function() {
              // if a menu is showing, close it.
              close_menu();
              // close any currently showing modals
-             close_modal();
-             // clear any existing hashes
-             clear_hash();
-             // set the hash for the current modal
-             set_hash(id);
-             // show a the new modal
-             form_markup = modals[id].markup;
-             LOG('Launch ', id);
-             form_markup = replace_user_tokens(form_markup, user);
-             LOG('after replace_user_tokens');
-             if (id == 'edit_profile' || id == 'register') {
-                 LOG('adding countries');
-                 form_markup = add_countries(form_markup, ore_data.country_select);
+             if (id != current_modal) {
+                 LOG('got a new id: '+id+' vs. '+current_modal);
+                 LOG('closing existing modals');
+                 close_modal();
+                 // clear any existing hashes
+                 clear_hash();
+                 // set the hash for the current modal
+                 set_hash(id);
+                 // show a the new modal
+                 form_markup = modals[id].markup;
+                 LOG('Launch ', id);
+                 form_markup = replace_user_tokens(form_markup, user);
+                 LOG('after replace_user_tokens');
+                 if (id == 'edit_profile' || id == 'register') {
+                     LOG('adding countries');
+                     form_markup = add_countries(form_markup, ore_data.country_select);
+                 }
+                 LOG('appending form to parent');
+                 // at this point, the form should appear!
+                 // here form is a DOM node...
+                 //form = $(form_parent).append(form_markup);
+                 form = $('#ore-container').append(form_markup);
+                 // set the "current_modal" value...
+                 current_modal = id;
+
+             } else {
+                 LOG('do nothing: we\'re already showing the modal: ', id);
              }
-             LOG('appending form to parent');
-             // at this point, the form should appear!
-             // here form is a DOM node...
-             //form = $(form_parent).append(form_markup);
-             form = $('#ore-container').append(form_markup);
              if (id == 'edit_profile' || id == 'register') {
                  LOG('Setting the country');
                  set_country(form, user.country);
@@ -574,16 +550,21 @@ jQuery(document).ready(function() {
              // enable validation
              forms = form.find(form_class);
              LOG('forms found: '+forms.length);
-             forms.each(function() {
-                 LOG('setting rules and messages', validation[id]);
-                 LOG('we have validation settings for '+ id);
-                 LOG('applying to this form: ', $(this));
-                 var validation_details = Object.assign({}, validation_defaults, validation[id]);
-                 LOG('setting rules and messaging to ', validation_details);
-                 $(this).validate(validation_details);
-             });
-             // set the "current_modal" value...
-             current_modal = id;
+             if (forms.length == 1) {
+                 forms.each(function() {
+                     LOG('setting rules and messages', validation[id]);
+                     //LOG('we have validation settings for '+ id);
+                    // LOG('applying to this form: ', $(this));
+                     var validation_details = Object.assign({}, validation_defaults, validation[id]);
+                     LOG('setting rules and messaging to ', validation_details);
+                     $(this).validate(validation_details);
+                     LOG('turn off submit button until valid...');
+                 });
+             } else if (forms.length > 1) {
+                 LOG('found too many forms!');
+             } else {
+                 LOG('found no forms');
+             }
              LOG('modal '+current_modal+' should be visible...');
              return true;
          } else {
@@ -594,7 +575,7 @@ jQuery(document).ready(function() {
      // close any currently open modal
      function close_modal(hash = null) {
          LOG('closing currently open modal');
-         //$(form_container+' .ore-modal.modal').hide();
+         // temp: disable this for testing.
          $(form_container+' .ore-modal.modal').remove();
          LOG('setting current_modal to null');
          current_modal = null;
@@ -616,6 +597,7 @@ jQuery(document).ready(function() {
              special_data = get_form_values();
              LOG('processing requested action: ', action);
              if (action == 'password_reset' || action == 'update_password') {
+                 LOG('in modal_events, setting special data for password_reset or update_password');
                  special_data['user_id'] = ore_data.user.user_id;
              } else if (action == 'enrol' || action == 'leave') {
                  special_data = {
@@ -624,28 +606,33 @@ jQuery(document).ready(function() {
                      'course_tag': ore_data.user.course.course_tag
                  };
              // informational modals, if OK is clicked, just close them
-             } else if (action == 'successful_login' ||
-                 action == 'successfully_enrolled' ||
-                 action == 'successfully_unenrolled') {
-                 LOG('closing informational modal: '+action);
+             } else if (get_purpose(action, 'confirmation')) {
                  close_modal();
-                 //LOG('reloading');
-                 //reload();
                  return true;
              } else {
                  // unless we get to a requested action that's not catered for here,
                  // in which case, bail, and say something!
-                 LOG('Not a configured button, but closing any open modals anyway...');
-                 close_modal();
-                 return false;
+                 //LOG('Not a configured button, but closing any open modals anyway...');
+                 //close_modal();
+                 LOG('Not a configured button, continuing...');
+                 //LOG('Not a configured button, returning false...');
+                 //return false;
              }
-             // process the ajax call...
-             if (ajax_submit(action, special_data)) {
-                 LOG('completed ajax call for', action);
-                 // check if a new hash has been specified by the submit, and act on it!
-                 check_hash(window.location.hash);
+             LOG('submitting form', action);
+             // if we've got a valid form... proceed.
+             if (form.valid()) {
+                 LOG('form is valid');
+                 // process the ajax call...
+                 if (ajax_submit(action, special_data)) {
+                     LOG('completed ajax call for', action);
+                     // check if a new hash has been specified by the submit, and act on it!
+                     close_modal();
+                     check_hash(window.location.hash);
+                 } else {
+                     LOG('failed to complete ajax call for', action);
+                 }
              } else {
-                 LOG('failed to complete ajax call for', action);
+                 LOG('form is not valid!');
              }
          }
          LOG('Modal_events returning "true"');
@@ -669,11 +656,19 @@ jQuery(document).ready(function() {
          });
          return values;
      }
+     function get_purpose(action, purpose) {
+         if (ore_data.modals[action].hasOwnProperty('purpose') &&
+            ore_data.modals[action].purpose == purpose) {
+                return true;
+         } else {
+             return false;
+         }
+     }
      // process ajax requests returning data to the server
      // and displaying error/status messages where relevant
      function ajax_submit(action, special_data) {
          LOG('in ajax_submission for', action);
-         LOG('url: ', ore_data.ajaxurl);
+        // LOG('url: ', ore_data.ajaxurl);
          default_data = {
              'action': 'ore_submit',
              'form_action': action,
@@ -692,7 +687,9 @@ jQuery(document).ready(function() {
                      LOG('Succeeded: ', action);
                      // setting hash to the "failed" result from the action
                      if (ore_data.modals[action].default.success != null) {
+                         LOG('setting hash to #'+ore_data.modals[action].default.success);
                          set_hash(ore_data.modals[action].default.success);
+                         show_modal(ore_data.modals[action].default.success);
                      }
                      // do special stuff for changes that have an impact on what
                      // the user is allowed to see on the site...
@@ -709,6 +706,7 @@ jQuery(document).ready(function() {
                      if (ore_data.modals[action].default.failed != null) {
                          LOG('setting hash to #'+ore_data.modals[action].default.failed)
                          set_hash('#'+ore_data.modals[action].default.failed);
+                         show_modal(ore_data.modals[action].default.failed);
                      } else {
                          LOG('nothing to do for action: '+action);
                      }
@@ -738,15 +736,16 @@ jQuery(document).ready(function() {
                  return false;
              }
          });
+         return true;
      }
      // combine data arrays
      function concat_data(one, two) {
-         LOG('one ', one);
-         LOG('two ', one);
+        // LOG('one ', one);
+        // LOG('two ', one);
          for (var key in two) {
              one[key] = two[key];
          }
-         LOG('resulting array: ', one);
+        // LOG('resulting array: ', one);
          return one;
      }
      // we need to strip the default action out of ids in the form of
@@ -831,12 +830,34 @@ jQuery(document).ready(function() {
          //LOG('checking if ore_data is visible: ', ore_data);
          if (hash != "") {
              LOG('Hash found: ('+hash+')');
-             //show_modal(hash);
-             //LOG('ore_data', ore_data);
-             //LOG('ore_data.modals', ore_data.modals[hash]);
+             // is it a hash we know?
              if (ore_data.modals.hasOwnProperty(hash)) {
-                 LOG('showing '+hash+' modal...');
-                 show_modal(hash);
+                 // do we have the right state for it?
+                 if (ore_data.modals[hash].hasOwnProperty('auth')) {
+                     // this hash is only relevant if the user is authenticated
+                     if (ore_data.modals[hash].auth) {
+                         LOG('This modal requires an authencated user');
+                         if (authenticated) {
+                             LOG('showing modal as user is authenticated');
+                             show_modal(hash);
+                         } else {
+                             LOG('modal is not appropriate for an unauthenticated user.');
+                         }
+                     } else {
+                         LOG('This modal requires an unauthencated user');
+                         if (!authenticated) {
+                             LOG('showing modal as user is not authenticated');
+                             show_modal(hash);
+                         } else {
+                             LOG('modal is not appropriate for an authenticated user.');
+                         }
+                     }
+                 } else {
+                     LOG('This probably isn\'t a hash for a dialogue we want to show: '+hash+'... removing the hash');
+                     clear_hash();
+                 }
+             } else {
+                 LOG('this isn\'t a hash we know... ', hash);
              }
          } else {
              LOG('no hash found...');

@@ -33,8 +33,8 @@ class OREMain extends OREBase {
         // jsquery validate script
         wp_register_script(
             'jquery-validate',
-            //'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js',
-            ORE_URL.'js/jquery.validate.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js',
+            //ORE_URL.'js/jquery.validate.js',
             array('jquery'), true
         );
         wp_enqueue_script(ORE_SCRIPT, ORE_URL.'js/ore_script.js', array(
@@ -77,7 +77,9 @@ class OREMain extends OREBase {
     // give realtime info on whether or not an email is unique in the system
     public function ajax_email_check() {
         global $wpdb;
-        if (email_exists($_POST['email'])) {
+        $new = $_POST['email'];
+        $existing = $_POST['current_email'];
+        if (email_exists($new) && $new != $existing) {
             echo json_encode('error.');
         } else{
             echo json_encode('true');
@@ -88,7 +90,8 @@ class OREMain extends OREBase {
     // give realtime info on whether or not a username is unique in the system
     public function ajax_username_check() {
         global $wpdb;
-        if (username_exists($_POST['username'])) {
+        $new = $_POST['username'];
+        if (username_exists($new)) {
             echo json_encode('error.');
         } else{
             echo json_encode('true');
@@ -326,6 +329,8 @@ class OREMain extends OREBase {
             }
             return $errors;
         }
+        $user_id = $_POST['user_id'];
+        $course_id = $_POST['course_id'];
         $this->log('user '.$user_id.' leaving course '.$course_id);
         $response = remove_user_from_blog($user_id, $course_id);
         $check = is_user_member_of_blog($user_id, $course_id);

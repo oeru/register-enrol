@@ -228,6 +228,14 @@ article.ore-form .container .entry-content > div.ore {
     color: #737373 !important;
 }
 
+/* validation errors */
+.form-group .error {
+    color: #C60C0C;
+    margin-top: 0.3em;
+    line-height: 1.15em;
+}
+/* end validation errors */
+
 /* error messages on modals */
 #ore-error-wrapper {
     text-align: left;
