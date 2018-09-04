@@ -212,6 +212,7 @@ article.ore-form .container .entry-content > div.ore {
     font-size: 20px;
     margin: 20px 0 0 0;
     border-bottom: none;
+    line-height: 1.15em;
 }
 #ore-container .modal-header {
     /*border-bottom: none;*/
