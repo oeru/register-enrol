@@ -76,9 +76,14 @@ class OREMain extends OREBase {
 
     // give realtime info on whether or not an email is unique in the system
     public function ajax_email_check() {
-        global $wpdb;
+        if ( ! wp_verify_nonce(sanitize_text_field($_POST['nonce_submit']), 'ore-submit-nonce') ) {
+            die ("Busted - someone's trying something funny in submit!");
+        } else {
+            $this->log('ore-submit-nonce all good.');
+        }
         $new = $_POST['email'];
-        $existing = $_POST['current_email'];
+        $current = (isset($_POST['current_email'])) ? $_POST['current_email'] : null;
+        $this->log('in email_check - new: '.$new.', current: '.$existing);
         if (email_exists($new) && $new != $existing) {
             echo json_encode('error.');
         } else{
@@ -89,9 +94,14 @@ class OREMain extends OREBase {
 
     // give realtime info on whether or not a username is unique in the system
     public function ajax_username_check() {
-        global $wpdb;
-        $new = $_POST['username'];
-        if (username_exists($new)) {
+        if ( ! wp_verify_nonce(sanitize_text_field($_POST['nonce_submit']), 'ore-submit-nonce') ) {
+            die ("Busted - someone's trying something funny in submit!");
+        } else {
+            $this->log('ore-submit-nonce all good.');
+        }
+        $username = $_POST['username'];
+        $this->log('in username_check: '.$username);
+        if (username_exists($username)) {
             echo json_encode('error.');
         } else{
             echo json_encode('true');
@@ -135,21 +145,24 @@ class OREMain extends OREBase {
                 $response = $this->login();
                 break;
             case 'reset_password':
-                $response = $this->reset_password();
                 $this->log('password_reset');
+                $response = $this->reset_password();
                 break;
             case 'update_password':
-                $response = $this->update_password();
                 $this->log('update_password');
+                $response = $this->update_password();
                 break;
             case 'register':
                 $this->log('register');
+                $response = $this->register();
                 break;
             case 'edit_profile':
                 $this->log('edit_profile');
+                $response = $this->edit_profile();
                 break;
             case 'session_expired':
                 $this->log('session_expired');
+                $response = $this->session_expired();
                 break;
             case 'enrol':
                 $this->log('enrol');
@@ -197,13 +210,13 @@ class OREMain extends OREBase {
         // ensure we have valid credentials from with which to find the relevant user account
         if (empty($_POST['credential']) || !is_string($_POST['credential'])) {
             $this->log('missing the credential');
-            $errors->add(ORE_ERROR_LABEL, __('<strong>ERROR</strong>: Enter a username or email address.'));
+            $errors->add(ORE_ERROR_LABEL, 'You must enter a username or email address.');
         } elseif (strpos($_POST['credential'], '@')) {
             $this->log('got an email: '.$_POST['credential']);
             $user_data = get_user_by('email', trim(wp_unslash($_POST['credential'])));
             if (empty($user_data)) {
                 $this->log('no user found');
-                $errors->add(ORE_ERROR_LABEL, __('<strong>ERROR</strong>: There is no user registered with that email address.'));
+                $errors->add(ORE_ERROR_LABEL, 'There is no user registered with that email address.');
             } else {
                 $this->log('found user id: '.$user_data->ID);
             }
@@ -218,7 +231,7 @@ class OREMain extends OREBase {
             return $errors;
         }
         if (!$user_data) {
-            $errors->add(ORE_ERROR_LABEL, __('<strong>ERROR</strong>: Invalid username or email.'));
+            $errors->add(ORE_ERROR_LABEL, 'You have entered an invalid username or email.');
             return $errors;
         }
         // Redefining user_login ensures we return the right case in the email.
@@ -260,7 +273,8 @@ class OREMain extends OREBase {
         $current_password = (!isset($_POST['current-password']) || $_POST['current-password'] == '') ? false : $_POST['current-password'];
         $new_password = (!isset($_POST['new-password']) || $_POST['new-password'] == '') ? false : $_POST['new-password'];
         $confirm_password = (!isset($_POST['confirm-password']) || $_POST['confirm-password'] == '') ? false : $_POST['confirm-password'];
-        $this->log('current_password = ('.$current_password.')');
+        // we don't want to log passwords under normal circumstances!!
+        //$this->log('current_password = ('.$current_password.')');
         if (!$user_id ||
             !$current_password ||
             !$new_password ||
@@ -270,21 +284,91 @@ class OREMain extends OREBase {
                 $errors->add(ORE_ERROR_LABEL, 'No user id was provided!');
             }
             if (!$current_password) {
-                $errors->add(ORE_ERROR_LABEL, 'You must enter your current password');
+                $errors->add(ORE_ERROR_LABEL, 'You must enter your current password.');
             }
             if (!$new_password) {
-                $errors->add(ORE_ERROR_LABEL, 'You must enter your new password');
+                $errors->add(ORE_ERROR_LABEL, 'You must enter your new password.');
             }
             if (!$confirm_password) {
-                $errors->add(ORE_ERROR_LABEL, 'You must enter your new password again to guard against typos');
+                $errors->add(ORE_ERROR_LABEL, 'You must enter your new password again to guard against typos.');
             } else if ($confirm_password != $new_password) {
-                $errors->add(ORE_ERROR_LABEL, 'Your confirmation password is not the same as your new password');
+                $errors->add(ORE_ERROR_LABEL, 'Your confirmation password is not the same as your new password.');
             }
             //$this->log('errors: '.print_r($errors, true));
             $this->errors = $errors;
             return $errors;
         } else {
             $this->log('all details are added, setting new password');
+            return true;
+        }
+    }
+    // register a new WordPress user
+    public function register() {
+        $this->log('in register');
+        $errors = $this->get_errors();
+        $first = ($_POST['first_name'] == '') ? false : sanitize_text_field(trim($_POST['first_name']));
+        $last = ($_POST['last_name'] == '') ? false : sanitize_text_field(trim($_POST['last_name']));
+        $username = ($_POST['username'] == '') ? false : sanitize_text_field(trim($_POST['display_name']));
+        $display = ($_POST['display_name'] == '') ? false : sanitize_text_field(trim($_POST['display_name']));
+        $password = (!isset($_POST['password']) || $_POST['password'] == '') ? false : $_POST['password'];
+        $confirm_password = (!isset($_POST['confirm-password']) || $_POST['confirm-password'] == '') ? false : $_POST['confirm-password'];
+        $email = (!isset($_POST['email']) || $_POST['email'] == '') ? false : $_POST['email'];
+        $country = (!isset($_POST['country']) || $_POST['country'] == '') ? false : $_POST['country'];
+        // if we're missing any of these fields, spit back an error...
+        if (!$first || !$last || !$username || !$display || !$password ||
+            !$confirm_password || !$email || !$country) {
+            $this->log('found a problem with the submitted values');
+            if (!$first) {
+                $errors->add(ORE_ERROR_LABEL, 'No first name was provided!');
+            }
+            if (!$last) {
+                $errors->add(ORE_ERROR_LABEL, 'No last name was provided!');
+            }
+            if (!$display) {
+                $errors->add(ORE_ERROR_LABEL, 'No display name was provided!');
+            }
+            if (!$username) {
+                $errors->add(ORE_ERROR_LABEL, 'No username was provided!');
+            }
+            if (!$password) {
+                $errors->add(ORE_ERROR_LABEL, 'You must enter a suitable password.');
+            }
+            if (!$confirm_password) {
+                $errors->add(ORE_ERROR_LABEL, 'You must enter your password again to guard against typos.');
+            } else if ($confirm_password != $new_password) {
+                $errors->add(ORE_ERROR_LABEL, 'Your confirmation password is not the same as your password.');
+            }
+            if (!$email) {
+                $errors->add(ORE_ERROR_LABEL, 'You must enter a valid email address.');
+            }
+            if (!$country) {
+                $errors->add(ORE_ERROR_LABEL, 'You must select a country to associate with.');
+            }
+            $this->errors = $errors;
+            return $errors;
+        } else {
+            $this->log('all details were provided, proceeding with registration...');
+            // we've got all the details, now check for problems with any of them:
+            // like...
+            // is the username poorly formed (we use the originally entered name, trimmed, here)
+            $got_errors = false;
+            if (!validate_username(trim($_POST['username']))) {
+                $errors->add(ORE_ERROR_LABEL, 'Your username is invalid because it contains illegal characters. Please select a username made up of lower case letters and numbers only.');
+                $got_errors = true;
+            }
+            // is the username already taken?
+            if (username_exists($username)) {
+                $errors->add(ORE_ERROR_LABEL, 'Your username is already taken - please select a different one. Or is it possible that you\'ve already got an account in this system? In that case, please try logging in instead.');
+                $got_errors = true;
+            }
+            // now check email for uniqueness
+            $got_errors = true;
+
+            if ($got_errors) {
+                $this->errors = $errors;
+                return $errors;
+            }
+            // no errors picked up...
             return true;
         }
     }

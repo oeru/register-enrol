@@ -134,7 +134,7 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="username">Username</label>'.
                 '<input type="text" class="form-control" id="username" name="username" placeholder="username" aria-describedby="helpUsername">'.
-                '<span id="helpUsername" class="help-block">Your preferred username. Allowed letters: a-z0-9_-. Spaces and other special characters not allowed. It must be unique in this OERu system. Please note: this username can only be altered by an administrator after it is created, so please choose wisely.</span>'.
+                '<span id="helpUsername" class="help-block">Your preferred username. Allowed characters: lower case letters (a-z) and numbers (0-9). Capital letters, spaces, and special characters not allowed. Your username must be unique in this OERu system. Please note: this username can only be altered by an administrator after it is created, so please choose wisely.</span>'.
             '</div>'.
             '<div class="form-group">'.
                 '<label for="display-name">Display Name</label>'.
@@ -144,7 +144,7 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="password">Password</label>'.
                 '<input type="password" class="form-control" id="password" name="password" aria-describedby="helpPassword">'.
-                '<span id="helpPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols.</span>'.
+                '<span id="helpPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols. Spaces are allowed. Your password is <em>case sensitive</em>.</span>'.
                 '<label for="confirm-password">Confirm password</label>'.
                 '<input type="password" class="form-control" id="confirm-password" name="confirm-password" aria-describedby="helpConfirmPassword">'.
                 '<span id="helpConfirmPassword" class="help-block">This must be identical to the Password field.'.
@@ -268,7 +268,7 @@ static $modals = array(
             '<div class="form-group">'.
                 '<label for="new-password">New Password</label>'.
                 '<input type="password" class="form-control" id="new-password" name="new-password" aria-describedby="helpNewPassword">'.
-                '<span id="helpNewPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols.</span>'.
+                '<span id="helpNewPassword" class="help-block">At least 8 characters with a mix of lower and upper case letters, numbers, and symbols. Spaces are allowed. Your password is <em>case sensitive</em>.</span>'.
                 '<label for="confirm-password">Confirm New Password</label>'.
                 '<input type="password" class="form-control" id="confirm-password" name="confirm-password" aria-describedby="helpConfirmPassword">'.
                 '<span id="helpConfirmPassword" class="help-block">This must be identical to the New Password field.'.

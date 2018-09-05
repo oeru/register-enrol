@@ -259,6 +259,32 @@ jQuery(document).ready(function() {
     /*
      * form validation, e.g. uniqueness of username and email
      */
+    // content entry helpers - these only apply to the registration form
+    $(form_container).on('focus', '#ore-modal-register #username', function() {
+        LOG('in username helper');
+        var first = $('#first-name').val();
+        var last = $('#last-name').val();
+        if (first && last && !this.value) {
+            this.value = first.toLowerCase()+last.toLowerCase();
+        }
+    });
+    $(form_container).on('focus', '#ore-modal-register #display-name', function() {
+        LOG('in display name helper');
+        var first = $('#first-name').val();
+        var last = $('#last-name').val();
+        if (first && last && !this.value) {
+            this.value = first+' '+last;
+        }
+    });
+    // custom validators
+    $.validator.addMethod('wp_username', function(value, element) {
+        LOG('in wp_username validator');
+        if (this.optional(element)) { return true; }
+        // we trim the value here, as we'll trim it elsewhere. No point in being
+        // too fussy :)
+        return /^[a-z0-9]+$/i.test(value.trim());
+    }, "Your username must be a combination of lowercase letters (a-z) and/or digits (0-9).");
+    // default values
     var validation_defaults = {
         debug: true
     }
@@ -296,6 +322,7 @@ jQuery(document).ready(function() {
                 username: {
                     required: true,
                     minlength: ore_data.un_min,
+                    wp_username: true,
                     remote: {
                         url: ore_data.ajaxurl,
                         type: 'POST',
@@ -304,7 +331,8 @@ jQuery(document).ready(function() {
                                 LOG('in username validation!');
                                 return $('#username').val();
                             },
-                            'action': 'ore_username_check'
+                            'action': 'ore_username_check',
+                            'nonce_submit': ore_data.nonce_submit
                         }
                     }
                 },
@@ -332,8 +360,8 @@ jQuery(document).ready(function() {
                                 LOG('in email validation!');
                                 return $('#email').val();
                             },
-                            'current_email': '',
-                            'action': 'ore_email_check'
+                            'action': 'ore_email_check',
+                            'nonce_submit': ore_data.nonce_submit
                         }
                     }
                 },
@@ -396,7 +424,8 @@ jQuery(document).ready(function() {
                                   return $('#email').val();
                               },
                               'current_email': ore_data.user.email,
-                              'action': 'ore_email_check'
+                              'action': 'ore_email_check',
+                              'nonce_submit': ore_data.nonce_submit
                           }
                       }
                   },
