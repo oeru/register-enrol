@@ -85,7 +85,7 @@ class OREMain extends OREBase {
         $current = (isset($_POST['current_email'])) ? $_POST['current_email'] : null;
         $this->log('in email_check - new: '.$new.', current: '.$existing);
         if (email_exists($new) && $new != $existing) {
-            echo json_encode('error.');
+            echo json_encode('This email is already in use - you must select a unique email. Or perhaps you already have an account? If so, please "Login" instead.');
         } else{
             echo json_encode('true');
         }
@@ -102,7 +102,7 @@ class OREMain extends OREBase {
         $username = $_POST['username'];
         $this->log('in username_check: '.$username);
         if (username_exists($username)) {
-            echo json_encode('error.');
+            echo json_encode('this username is already in use - you must select a unique username. Or is it possible you already have an account? If so, please "Login" instead.');
         } else{
             echo json_encode('true');
         }
@@ -295,8 +295,34 @@ class OREMain extends OREBase {
                 $errors->add(ORE_ERROR_LABEL, 'Your confirmation password is not the same as your new password.');
             }
             //$this->log('errors: '.print_r($errors, true));
-            $this->errors = $errors;
-            return $errors;
+            // now check the current password
+            // get the username based on the userid:
+            $user = get_user($user_id);
+            $username = $user->data->user_login;
+            // check if that password and username are correct for that user
+            $user = wp_authenticate_username_password($user, $username, $current_password);
+            // if authentication failed (with an error)
+            if (is_wp_error($user)) {
+                $errors->add(ORE_ERROR_LABEL, 'Your current password is not valid for your user.');
+            // it worked, so let's change the password.
+            } else {
+                $user->data->user_pass = $new_password;
+                // this actually sets the new password, and potentially mails
+                // the user and admin to alert them to the change.
+                if (wp_update_user($user)) {
+                    return true;
+                } else {
+                    $error->add(ORE_ERROR_LABEL, 'Failed to update user for some reason.');
+                }
+            }
+            if ($errors->get_error_code()) {
+                $this->log('Password update failed!');
+                $this->errors = $errors;
+                return $errors;
+            } else {
+                $this->log('Password updated!');
+                return true;
+            }
         } else {
             $this->log('all details are added, setting new password');
             return true;
@@ -306,14 +332,14 @@ class OREMain extends OREBase {
     public function register() {
         $this->log('in register');
         $errors = $this->get_errors();
-        $first = ($_POST['first_name'] == '') ? false : sanitize_text_field(trim($_POST['first_name']));
-        $last = ($_POST['last_name'] == '') ? false : sanitize_text_field(trim($_POST['last_name']));
-        $username = ($_POST['username'] == '') ? false : sanitize_text_field(trim($_POST['display_name']));
-        $display = ($_POST['display_name'] == '') ? false : sanitize_text_field(trim($_POST['display_name']));
+        $first = ($_POST['first-name'] == '') ? false : sanitize_text_field(trim($_POST['first-name']));
+        $last = ($_POST['last-name'] == '') ? false : sanitize_text_field(trim($_POST['last-name']));
+        $username = ($_POST['username'] == '') ? false : sanitize_text_field(trim($_POST['username']));
+        $display = ($_POST['display-name'] == '') ? false : sanitize_text_field(trim($_POST['display-name']));
         $password = (!isset($_POST['password']) || $_POST['password'] == '') ? false : $_POST['password'];
         $confirm_password = (!isset($_POST['confirm-password']) || $_POST['confirm-password'] == '') ? false : $_POST['confirm-password'];
         $email = (!isset($_POST['email']) || $_POST['email'] == '') ? false : $_POST['email'];
-        $country = (!isset($_POST['country']) || $_POST['country'] == '') ? false : $_POST['country'];
+        $country = (!isset($_POST['ore-country']) || $_POST['ore-country'] == '') ? false : $_POST['ore-country'];
         // if we're missing any of these fields, spit back an error...
         if (!$first || !$last || !$username || !$display || !$password ||
             !$confirm_password || !$email || !$country) {
@@ -351,22 +377,86 @@ class OREMain extends OREBase {
             // we've got all the details, now check for problems with any of them:
             // like...
             // is the username poorly formed (we use the originally entered name, trimmed, here)
-            $got_errors = false;
             if (!validate_username(trim($_POST['username']))) {
-                $errors->add(ORE_ERROR_LABEL, 'Your username is invalid because it contains illegal characters. Please select a username made up of lower case letters and numbers only.');
-                $got_errors = true;
+                $errors->add(ORE_ERROR_LABEL, 'This username is invalid because it contains illegal characters. Please select a username made up of lower case letters and numbers only.');
             }
             // is the username already taken?
             if (username_exists($username)) {
-                $errors->add(ORE_ERROR_LABEL, 'Your username is already taken - please select a different one. Or is it possible that you\'ve already got an account in this system? In that case, please try logging in instead.');
-                $got_errors = true;
+                $errors->add(ORE_ERROR_LABEL, 'This username is already taken by another user. Please select a different one. Or is it possible that you\'ve already got an account in this system? In that case, please try to "Login" instead.');
             }
-            // now check email for uniqueness
-            $got_errors = true;
+            /**
+             * Filters the email address of a user being registered.
+             *
+             * @since 2.1.0
+             *
+             * @param string $email The email address of the new user.
+             */
+            $email = apply_filters( 'user_registration_email', $email );
 
-            if ($got_errors) {
+            // now check email for uniqueness
+            if (!is_email(trim($_POST['email']))) {
+                $errors->add(ORE_ERROR_LABEL, 'Your email is not valid.');
+            }
+            // is the email already taken?
+            if (email_exists($email)) {
+                $errors->add(ORE_ERROR_LABEL, 'Your email is already taken by another user - please select a different one. Or is it possible that you\'ve already got an account in this system? In that case, please try  to "Login" instead.');
+            }
+           /**
+             * Fires when submitting registration form data, before the user is created.
+             *
+             * @since 2.1.0
+             *
+             * @param string   $username The submitted username after being sanitized.
+             * @param string   $email The submitted email.
+             * @param WP_Error $errors Contains any errors with submitted username and email,
+             * e.g., an empty field, an invalid username or email, or an existing username or email.
+             */
+            do_action('register_post', $username, $email, $errors);
+            /**
+             * Filters the errors encountered when a new user is being registered.
+             *
+             * The filtered WP_Error object may, for example, contain errors for an invalid
+             * or existing username or email address. A WP_Error object should always returned,
+             * but may or may not contain errors.
+             *
+             * If any errors are present in $errors, this will abort the user's registration.
+             *
+             * @since 2.1.0
+             *
+             * @param WP_Error $errors               A WP_Error object containing any errors encountered
+             *                                       during registration.
+             * @param string   $sanitized_user_login User's username after it has been sanitized.
+             * @param string   $user_email           User's email.
+             */
+            $errors = apply_filters('registration_errors', $errors, $username, $email);
+            // if there're errors to this point return with them...
+            if ($errors->get_error_code()) {
                 $this->errors = $errors;
                 return $errors;
+            // if not, proceed with creating the user!
+            } else {
+                // build the userdata array used to create the user.
+                // We'll deal with the user's country affiliation later,
+                // as it's not part of the default user model.
+                $userdata = array(
+                    'first_name' => $first,
+                    'last_name' => $last,
+                    'user_login' => $username,
+                    'display_name' => $display,
+                    'user_pass' => $password,
+                    'user_email' => $email
+                );
+                // actually try to create the user!
+                $errors_or_id = wp_insert_user($userdata);
+                if (is_object($errors_or_id) && $errors_or_id->get_error_code()) {
+                    $this->log('Creating the new user failed. Array: '.print_r($userdata, true));
+                    $this->errors = $errors_or_id;
+                    return $errors_or_id;
+                // if we didn't get an error, set the resulting user's country!
+                } else {
+                    $this->log('setting the user (id: '.$errors_or_id.') to '.$country.'.');
+                    $this->set_country($errors_or_id, $country);
+                }
             }
             // no errors picked up...
             return true;
@@ -438,6 +528,11 @@ class OREMain extends OREBase {
             $user_id = $current->data->ID;
             // for security's sake, don't even show the password hash...
             unset($current->data->user_pass);
+        } else {
+            if (!($current = get_userdata($user_id))){
+                $this->log('There is no user associated with user_id: '.$user_id);
+                return false;
+            }
         }
         //$this->log('current user: '.print_r($current, true));
         // initialise this with the default values

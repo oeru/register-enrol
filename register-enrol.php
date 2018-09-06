@@ -71,7 +71,7 @@ define('ORE_ADMIN_MENU', 'ORE Settings');*/
 define('ORE_DEBUG', true);
 define('LOG_STREAM', getenv('LOG_STREAM'));
 define('ORE_MIN_PASSWORD_LENGTH', 8);
-define('ORE_MIN_USERNAME_LENGTH', 6);
+define('ORE_MIN_USERNAME_LENGTH', 4);
 define('ORE_MIN_DISPLAY_NAME_LENGTH', 6);
 
 // include the dependencies
