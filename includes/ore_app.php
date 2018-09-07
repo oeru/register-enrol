@@ -305,12 +305,15 @@ class OREMain extends OREBase {
                 $errors->add(ORE_ERROR_LABEL, 'Your current password is not valid for your user.');
             // it worked, so let's change the password.
             } else {
+                $this->log('ok, saving new password');
                 $user->data->user_pass = $new_password;
                 // this actually sets the new password, and potentially mails
                 // the user and admin to alert them to the change.
                 if (wp_update_user($user)) {
+                    $this->log('update to password appears successful');
                     return true;
                 } else {
+                    $this->log('update to password resulted in an error...'.print_r($error, true));
                     $error->add(ORE_ERROR_LABEL, 'Failed to update user for some reason.');
                 }
             }
