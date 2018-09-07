@@ -181,9 +181,8 @@ class OREMain extends OREBase {
             $this->log('failed to complete '.$form_action);
             $this->log('response is '.print_r($response, true));
             //$this->ajax_response(array('success' => $response));
-            return $response;
         }
-        return true;
+        return $response;
     }
     // login process
     public function login() {
@@ -456,6 +455,17 @@ class OREMain extends OREBase {
                 } else {
                     $this->log('setting the user (id: '.$errors_or_id.') to '.$country.'.');
                     $this->set_country($errors_or_id, $country);
+                    // this has to be in the right format to provide info
+                    // to the JS modals...
+                    $response = array(
+                        'user_id' => $errors_or_id,
+                        'username' => $username,
+                        'display_name' => $display,
+                        'email' => $email,
+                        'first_name' => $first,
+                        'last_name' => $last,
+                    );
+                    return $response;
                 }
             }
             // no errors picked up...

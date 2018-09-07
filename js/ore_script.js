@@ -554,7 +554,8 @@ jQuery(document).ready(function() {
                  set_hash(id);
                  // show a the new modal
                  form_markup = modals[id].markup;
-                 LOG('Launch ', id);
+                 LOG('Launching ', id);
+                 LOG('Replacing user tokens with contents of ', user);
                  form_markup = replace_user_tokens(form_markup, user);
                  LOG('after replace_user_tokens');
                  if (id == 'edit_profile' || id == 'register') {
@@ -714,6 +715,13 @@ jQuery(document).ready(function() {
                  // if it was successful, do other stuff
                  if (data.hasOwnProperty('success')) {
                      LOG('Succeeded: ', action);
+                     // set details for registration feedback before showing new modal
+                     if (action == 'register') {
+                         LOG('adding details to the ore_data object to make it possible to provide user feedback.', ore_data.user);
+                         ore_data.user = data.success;
+                         LOG('reassigned data.success to ore_data.user: ', ore_data.user);
+
+                     }
                      // setting hash to the "failed" result from the action
                      if (ore_data.modals[action].default.success != null) {
                          LOG('setting hash to #'+ore_data.modals[action].default.success);

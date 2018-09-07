@@ -177,10 +177,11 @@ static $modals = array(
         'title' => 'Registration successful',
         'token' => 'successful-login',
         'purpose' => 'confirmation',
-        'markup' => '<p>You have successfully registered a user called {display_name} with username {username}, and email {email}.</p>',
+        'markup' => '<p>You have successfully registered a user called <strong>{display_name}</strong> with username <strong>{username}</strong>, and email <strong>{email}</strong>. Please double-check your email is correct, as it will be used to send you a link to reset your password if you forget it.</p><p>You can now Login with those details including the password you specified.</p>',
         'default' => array(
             'label' => 'Ok',
             'class' => 'submit',
+            'destination' => 'login',
         ),
     ),
     'failed_registration' => array(
