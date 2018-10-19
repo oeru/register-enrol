@@ -83,8 +83,8 @@ class OREMain extends OREBase {
         }
         $new = $_POST['email'];
         $current = (isset($_POST['current_email'])) ? $_POST['current_email'] : null;
-        $this->log('in email_check - new: '.$new.', current: '.$existing);
-        if (email_exists($new) && $new != $existing) {
+        $this->log('in email_check - new: '.$new.', current: '.$current);
+        if ($new != $current && email_exists($new)) {
             echo json_encode('This email is already in use - you must select a unique email. Or perhaps you already have an account? If so, please "Login" instead.');
         } else{
             echo json_encode('true');
@@ -121,15 +121,15 @@ class OREMain extends OREBase {
        $this->log("processing submit form...");
        // generate the response
        header( "Content-Type: application/json" );
-       $result = $this->process();
+       $response = $this->process();
        $this->log('returned result of '.print_r($result, true));
-       if (!is_wp_error($result)) {
+       if (!is_wp_error($response)) {
            $this->log('successfully completed '.$_POST['form_action']);
-           $this->ajax_response(array('success' => $result));
+           $this->ajax_response(array('success' => $response));
        } else {
            $this->log('We\'ve got an error!');
-           $this->log('failed to complete '.$_POST['form_action'].' with errors '.print_r($result, true));
-           $this->ajax_response(array('failed' => $result));
+           $this->log('failed to complete '.$_POST['form_action'].' with errors '.print_r($response, true));
+           $this->ajax_response(array('failed' => $response));
        }
        $this->log('ajax_submit done, dying...');
        wp_die();
@@ -195,12 +195,17 @@ class OREMain extends OREBase {
         $this->log('login: '.print_r($login, true));
         // if login fails
         if (is_wp_error($response)) {
-            return $response;
         } else {
             $user = $response; // just for clarity :)
             wp_set_auth_cookie($user->ID);
+            // reusing response to send info back to the JS inferface
+            $response = array(
+                'user_id' => $user->ID,
+                'username' => $user->data->user_login,
+                'display_name' => $user->data->display_name
+            );
         }
-        return true;
+        return $response;
     }
     // reset password process - from "function retrieve_password()" in wp-login.php
     public function reset_password() {
@@ -293,19 +298,26 @@ class OREMain extends OREBase {
             } else if ($confirm_password != $new_password) {
                 $errors->add(ORE_ERROR_LABEL, 'Your confirmation password is not the same as your new password.');
             }
-            //$this->log('errors: '.print_r($errors, true));
+            $this->log('found errors, failing.');
+            return $errors;
+        } else {
+            $this->log('no errors, proceeding.');
             // now check the current password
             // get the username based on the userid:
-            $user = get_user($user_id);
+            $user = get_userdata($user_id);
+            $this->log('returned user '.print_r($user, true));
             $username = $user->data->user_login;
             // check if that password and username are correct for that user
-            $user = wp_authenticate_username_password($user, $username, $current_password);
+            $this->log('testing your password for user '.$username.' to see if it\'s correct: '.$current_password);
+            $error_or_user = wp_authenticate_username_password(null, $username, $current_password);
             // if authentication failed (with an error)
-            if (is_wp_error($user)) {
+            if (is_wp_error($error_or_user)) {
+                $this->log('not correct');
                 $errors->add(ORE_ERROR_LABEL, 'Your current password is not valid for your user.');
-            // it worked, so let's change the password.
+            // if it worked, let's change the password.
             } else {
                 $this->log('ok, saving new password');
+                // this is the user found previously
                 $user->data->user_pass = $new_password;
                 // this actually sets the new password, and potentially mails
                 // the user and admin to alert them to the change.
@@ -325,9 +337,6 @@ class OREMain extends OREBase {
                 $this->log('Password updated!');
                 return true;
             }
-        } else {
-            $this->log('all details are added, setting new password');
-            return true;
         }
     }
     // register a new WordPress user
@@ -397,11 +406,11 @@ class OREMain extends OREBase {
 
             // now check email for uniqueness
             if (!is_email(trim($_POST['email']))) {
-                $errors->add(ORE_ERROR_LABEL, 'Your email is not valid.');
+                $errors->add(ORE_ERROR_LABEL, 'The email you specified is not valid.');
             }
             // is the email already taken?
             if (email_exists($email)) {
-                $errors->add(ORE_ERROR_LABEL, 'Your email is already taken by another user - please select a different one. Or is it possible that you\'ve already got an account in this system? In that case, please try  to "Login" instead.');
+                $errors->add(ORE_ERROR_LABEL, 'The email you specified is already taken by another user - please select a different one. Or is it possible that you\'ve already got an account in this system? If so, please try to "Login" instead.');
             }
            /**
              * Fires when submitting registration form data, before the user is created.
@@ -451,6 +460,113 @@ class OREMain extends OREBase {
                 // actually try to create the user!
                 $errors_or_id = wp_insert_user($userdata);
                 if (is_object($errors_or_id) && $errors_or_id->get_error_code()) {
+                    $this->log('Creating the new user failed. Array: '.print_r($userdata, true));
+                    $this->errors = $errors_or_id;
+                    return $errors_or_id;
+                // if we didn't get an error, set the resulting user's country!
+                } else {
+                    $this->log('setting the user (id: '.$errors_or_id.') to '.$country.'.');
+                    $this->set_country($errors_or_id, $country);
+                    // this has to be in the right format to provide info
+                    // to the JS modals...
+                    $response = array(
+                        'user_id' => $errors_or_id,
+                        'username' => $username,
+                        'display_name' => $display,
+                        'email' => $email,
+                        'first_name' => $first,
+                        'last_name' => $last,
+                    );
+                    return $response;
+                }
+            }
+            // no errors picked up...
+            return true;
+        }
+    }
+    // a user editing their profile $details
+    public function edit_profile() {
+        $this->log('in edit_profile');
+        $errors = $this->get_errors();
+        // $user_id needs to be an integer...
+        $user_id = (is_int($_POST['user_id'])) ? false : $_POST['user_id'];
+        $first = ($_POST['first-name'] == '') ? false : sanitize_text_field(trim($_POST['first-name']));
+        $last = ($_POST['last-name'] == '') ? false : sanitize_text_field(trim($_POST['last-name']));
+        $display = ($_POST['display-name'] == '') ? false : sanitize_text_field(trim($_POST['display-name']));
+        $email = (!isset($_POST['email']) || $_POST['email'] == '') ? false : $_POST['email'];
+        $country = (!isset($_POST['ore-country']) || $_POST['ore-country'] == '') ? false : $_POST['ore-country'];
+        $user = null;
+        $existing_email = null;
+        // if we're missing any of these fields, spit back an error...
+        if (!$user_id || !$first || !$last || !$display || !$email || !$country) {
+            $this->log('found a problem with the submitted values');
+            if (!$user_id) {
+                $errors->add(ORE_ERROR_LABEL, 'No valid user ID was provided!');
+            }
+            if (!$first) {
+                $errors->add(ORE_ERROR_LABEL, 'No first name was provided!');
+            }
+            if (!$last) {
+                $errors->add(ORE_ERROR_LABEL, 'No last name was provided!');
+            }
+            if (!$display) {
+                $errors->add(ORE_ERROR_LABEL, 'No display name was provided!');
+            }
+            if (!$email) {
+                $errors->add(ORE_ERROR_LABEL, 'You must enter a valid email address.');
+            }
+            if (!$country) {
+                $errors->add(ORE_ERROR_LABEL, 'You must select a country to associate with.');
+            }
+            $this->errors = $errors;
+            return $errors;
+        } else {
+            $this->log('checking for a valid user_id: '.$user_id);
+            if ($user = get_userdata($user_id)) {
+                $this->log('found user with id '.$user_id.'! Grabbing details');
+                $username = sanitize_text_field($_POST['username']);
+                $existing_email = $_POST['existing_email'];
+                $this->log('user: '.$username.', email: '.$existing_email.'.');
+            } else {
+                $errors->add(ORE_ERROR_LABEL, 'The supplied user ID, '.$user_id.' does not correspond to a valid user.');
+                return errors;
+            }
+            $this->log('all details were provided, proceeding with saving your profile...');
+            // now check email for uniqueness
+            if (!is_email(trim($_POST['email']))) {
+                $errors->add(ORE_ERROR_LABEL, 'Your email is not valid.');
+            }
+            // is the email already taken?
+            // assuming it's the existing one, unchanged.
+            $this->log('email is '.$email.', existing email is '.$existing_email.'.');
+            if ($email != $existing_email && email_exists($email)) {
+                $errors->add(ORE_ERROR_LABEL, 'Your email is already taken by another user - please select a different one. Or is it possible that you\'ve already got an account in this system? In that case, please try  to "Login" instead.');
+            }
+            // if there're errors to this point return with them...
+            if ($errors->get_error_code()) {
+                $this->errors = $errors;
+                return $errors;
+            // if not, proceed with creating the user!
+            } else {
+                // build the userdata array used to create the user.
+                // We'll deal with the user's country affiliation later,
+                // as it's not part of the default user model.
+                $userdata = array(
+                    'ID' => $user_id,
+                    'first_name' => $first,
+                    'last_name' => $last,
+                    'user_login' => $username,
+                    'display_name' => $display
+                );
+                // only save the email again if it's *different* from the user's
+                // existing email address, as they might otherwise hit an
+                // "email already in use" error.
+                if ($email != $existing_email) {
+                    $userdata['user_email'] = $email;
+                }
+                // actually try to create the user!
+                $errors_or_id = wp_update_user($userdata);
+                if (is_wp_error($errors_or_id)) {
                     $this->log('Creating the new user failed. Array: '.print_r($userdata, true));
                     $this->errors = $errors_or_id;
                     return $errors_or_id;

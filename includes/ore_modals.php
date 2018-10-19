@@ -327,7 +327,7 @@ static $modals = array(
         'default' => array(
             'label' => 'Enrol',
             'class' => 'submit',
-            'detail' => 'Please note: <strong>by enrolling in this course, you are opt-in to receiving course instructions via email</strong>. Once enrolled, have no fear: you can leave the course any time you like.',
+            'detail' => '<strong>By enrolling in this course, you are opt-in to receiving course instructions via email</strong>.',
             'success' => 'successfully_enrolled',
             'failed' => 'failed_to_enrol',
         ),
@@ -360,7 +360,7 @@ static $modals = array(
         'title' => 'Leave this OERu Course',
         'token' => 'leave',
         'auth' => true,
-        'markup' => '<p>You can leave this course, "{course_title}" without penalty. You can also rejoin in future if you like.</p>',
+        'markup' => '<p>You can unenrol from this course, "{course_title}" at any time. You can also rejoin in future if you like.</p>',
         'default' => array(
             'label' => 'Unenrol',
             'class' => 'submit',

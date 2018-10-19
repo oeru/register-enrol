@@ -53,7 +53,8 @@ jQuery(document).ready(function() {
                  LOG('using username instead ', user.username);
                  $('#ore-label').text(user.username);
              }
-             $('#ore-login-modal').attr('title', 'You\'re logged in as '+user.username);
+             /*$('#ore-login-modal').attr('title', 'You\'re logged in as '+user.username);*/
+             $('#ore-login-modal').prop('title', 'You\'re logged in as '+user.username);
              if (user.hasOwnProperty('avatar_url')) {
                  LOG('avatar', user.avatar_url);
                  var avatar = $('<img>').attr({src: user.avatar_url + '?s=26&r=g', class: 'ore-avatar'});
@@ -67,7 +68,7 @@ jQuery(document).ready(function() {
                      msg = 'Not enrolled';
                      msg += '<span class="ore-unenrolled ore-course-status-indicator">&nbsp;</span>';
                  }
-                 $('#ore-login-modal').append('&nbsp;&raquo;&nbsp;<span id="ore-course-info" class="course-info">'+msg+'</span>');
+                 $('#ore-login-modal').append('<span class="ore-spacer">&nbsp;&raquo;&nbsp;</span><span id="ore-course-info" class="course-info">'+msg+'</span>');
              }
              return true;
          } else {
@@ -210,9 +211,9 @@ jQuery(document).ready(function() {
              // create the menu
              trigger.after('<div class="'+menu+'">'+text+'</div>');
              // manage positioning of the menus (voffset pixels above and hoffset left of trigger)
-             var right = 0;
-             var top = trigger.outerHeight();
-             trigger.next().css('right',right);
+             //var right = 0;
+             var top = trigger.outerHeight()+10; // offset of 10 required
+             //trigger.next().css('right',right);
              trigger.next().css('top',top);
          }
          function enable_menu() {
@@ -533,6 +534,7 @@ jQuery(document).ready(function() {
          if (value_in_object(e.target.classList, 'close')) {
              LOG('close the modal!');
              close_modal();
+             clear_hash();
          }
      });
      // show a modal based on its id, the key in the modals array in ore_modals.php
@@ -626,9 +628,12 @@ jQuery(document).ready(function() {
          } else {
              special_data = get_form_values();
              LOG('processing requested action: ', action);
-             if (action == 'password_reset' || action == 'update_password') {
-                 LOG('in modal_events, setting special data for password_reset or update_password');
+             if (action == 'password_reset' || action == 'update_password' || action == 'edit_profile') {
+                 LOG('in modal_events, setting special data for password_reset, or update_password, or edit_profile');
                  special_data['user_id'] = ore_data.user.user_id;
+                 special_data['username'] = ore_data.user.username;
+                 special_data['existing_email'] = ore_data.user.email;
+                 LOG('updating special_data: ', special_data);
              } else if (action == 'enrol' || action == 'leave') {
                  special_data = {
                      'user_id': ore_data.user.user_id,
@@ -716,11 +721,10 @@ jQuery(document).ready(function() {
                  if (data.hasOwnProperty('success')) {
                      LOG('Succeeded: ', action);
                      // set details for registration feedback before showing new modal
-                     if (action == 'register') {
+                     if (action == 'register' || action == 'edit_profile' || action == 'login') {
                          LOG('adding details to the ore_data object to make it possible to provide user feedback.', ore_data.user);
                          ore_data.user = data.success;
                          LOG('reassigned data.success to ore_data.user: ', ore_data.user);
-
                      }
                      // setting hash to the "failed" result from the action
                      if (ore_data.modals[action].default.success != null) {
@@ -730,7 +734,7 @@ jQuery(document).ready(function() {
                      }
                      // do special stuff for changes that have an impact on what
                      // the user is allowed to see on the site...
-                     if (action == 'login' || action == 'enrol' || action == 'leave') {
+                     if (action == 'login' || action == 'edit_profile' || action == 'enrol' || action == 'leave') {
                          LOG('Reloading page for completed action: ', action);
                          reload(ore_data.modals[action].default.success);
                      } else {

@@ -12,7 +12,9 @@ article.ore-form .container .entry-content > div.ore {
 #ore-container {
     font-family: 'Open Sans', sans-serif;
     vertical-align: middle;
-    padding-top: 3px;
+    margin-top: 72px;
+    padding-right: 2px;
+    float: right;
 }
 /*#ore-container .ore-modal.fade { opacity: 1.0; }*/
 #ore-container .ore-modal {
@@ -43,7 +45,6 @@ article.ore-form .container .entry-content > div.ore {
     padding-right: 0px;
 }
 /*#ore-container .ore-third { width: 33.33%; }*/
-
 #ore-container p {
     line-height: normal;
 }
@@ -88,8 +89,11 @@ article.ore-form .container .entry-content > div.ore {
     cursor: pointer;
 }
 #ore-container .ore-trigger:hover {
-    color: #FFFE89;
+    /*color: #FFFE89;*/
+    color: #000;
     text-decoration: none;
+    border: collapse;
+    /*border: 1px black solid;*/
 }
 /* correct padding around general anchors in modal content */
 #ore-container .modal a { padding: 0; }
@@ -107,6 +111,7 @@ article.ore-form .container .entry-content > div.ore {
 .ore-menu {
     display: block;
     position: absolute;
+    right: 0;
     padding: 12px;
     width: 400px;
     border: solid 1px #F7BD27;
@@ -254,4 +259,33 @@ article.ore-form .container .entry-content > div.ore {
     display: block;
     list-style: decimal;
     list-style-type: decimal;
+}
+
+/* mobile configuration */
+@media (max-width: 992px) {
+    #ore-container {
+        margin-top: 28px;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-width: 500px) {
+    .ore-menu {
+        width: 100%;
+        width: 100vw;
+        right: -17px;
+    }
+}
+
+@media (max-width: 320px) {
+    #ore-label { display: none; }
+    .ore-spacer { display: none; }
+    .ore-menu {
+        width: 100%;
+        width: 100vw;
+        right: -17px;
+    }
 }
